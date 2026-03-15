@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Environmental Impact Dashboard</title>
+<title>BioBrew — Environmental Impact Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -56,10 +56,48 @@
     z-index: 1;
   }
 
-  header {
-    margin-bottom: 40px;
-    animation: fadeUp 0.6s ease both;
+  /* Loading state */
+  #loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: 20px;
   }
+
+  .spinner {
+    width: 36px; height: 36px;
+    border: 2px solid var(--border);
+    border-top-color: var(--green-bright);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* Error state */
+  #error {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+    font-family: var(--font-mono);
+    color: var(--red);
+    font-size: 13px;
+  }
+
+  /* Main content — hidden until data loads */
+  #main { display: none; }
+
+  header { margin-bottom: 40px; animation: fadeUp 0.6s ease both; }
 
   .eyebrow {
     font-family: var(--font-mono);
@@ -168,20 +206,12 @@
 
   .kpi.c-green  { border-color: rgba(74,222,128,0.3); }
   .kpi.c-green::before  { background: linear-gradient(90deg, transparent, #4ade80, transparent); }
-  .kpi.c-teal   { border-color: rgba(45,212,191,0.2); }
   .kpi.c-teal::before   { background: linear-gradient(90deg, transparent, #2dd4bf, transparent); }
-  .kpi.c-blue   { border-color: rgba(96,165,250,0.2); }
   .kpi.c-blue::before   { background: linear-gradient(90deg, transparent, #60a5fa, transparent); }
-  .kpi.c-amber  { border-color: rgba(251,191,36,0.2); }
   .kpi.c-amber::before  { background: linear-gradient(90deg, transparent, #fbbf24, transparent); }
-  .kpi.c-purple { border-color: rgba(167,139,250,0.2); }
   .kpi.c-purple::before { background: linear-gradient(90deg, transparent, #a78bfa, transparent); }
-  .kpi.c-red    { border-color: rgba(248,113,113,0.2); }
   .kpi.c-red::before    { background: linear-gradient(90deg, transparent, #f87171, transparent); }
-  .kpi.c-orange { border-color: rgba(251,146,60,0.2); }
   .kpi.c-orange::before { background: linear-gradient(90deg, transparent, #fb923c, transparent); }
-  .kpi.c-white  { border-color: rgba(163,197,163,0.2); }
-  .kpi.c-white::before  { background: linear-gradient(90deg, transparent, #a3c5a3, transparent); }
 
   .kpi-label {
     font-family: var(--font-mono);
@@ -284,6 +314,15 @@
 
   .inline-bar-fill { height: 100%; border-radius: 3px; opacity: 0.8; }
 
+  .last-updated {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    opacity: 0.5;
+    margin-bottom: 28px;
+    animation: fadeUp 0.6s 0.15s ease both;
+  }
+
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(18px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -312,268 +351,367 @@
 <body>
 <div class="wrapper">
 
-  <header>
-    <div class="eyebrow">// Environmental Impact Summary · SP26</div>
-    <h1>Coffee Grounds<br>Impact Tracker</h1>
-    <div class="subtitle">Emissions diverted from landfill decomposition</div>
-  </header>
-
-  <div class="badge-row">
-    <div class="badge"><span class="dot"></span> Sources: <strong>3</strong></div>
-    <div class="badge"><span class="dot"></span> Partnerships: <strong>5</strong></div>
-    <div class="badge"><span class="dot"></span> Roast Types: <strong>2</strong></div>
+  <!-- Loading -->
+  <div id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Fetching latest data...</div>
   </div>
 
-  <div class="section-label">// total impact to date</div>
-  <div class="section-title">Key Metrics</div>
-
-  <div class="kpi-row">
-    <div class="kpi c-green" style="background: linear-gradient(135deg, var(--surface), rgba(74,222,128,0.06));">
-      <div class="kpi-label">☕ Grounds Repurposed</div>
-      <div class="kpi-value" style="color: var(--green-bright);">107g</div>
-      <div class="kpi-sub">coffee grounds diverted<br>from landfill</div>
-    </div>
-    <div class="kpi c-green">
-      <div class="kpi-label">🌿 CO₂ Avoided</div>
-      <div class="kpi-value" style="color: var(--green-bright);">411g</div>
-      <div class="kpi-sub">carbon dioxide<br>not emitted</div>
-    </div>
-    <div class="kpi c-teal">
-      <div class="kpi-label">🔥 Methane (CH₄)</div>
-      <div class="kpi-value" style="color: var(--teal);">28.9g</div>
-      <div class="kpi-sub">potent greenhouse gas<br>avoided</div>
-    </div>
-    <div class="kpi c-amber">
-      <div class="kpi-label">🌫 Nitrous Oxide (N₂O)</div>
-      <div class="kpi-value" style="color: var(--amber);">4.48mg</div>
-      <div class="kpi-sub">greenhouse gas<br>avoided</div>
-    </div>
-    <div class="kpi c-blue">
-      <div class="kpi-label">💧 Leachate</div>
-      <div class="kpi-value" style="color: var(--blue);">560mg</div>
-      <div class="kpi-sub">soil &amp; groundwater<br>pollutant avoided</div>
-    </div>
-    <div class="kpi c-purple">
-      <div class="kpi-label">⚗️ Nitrogen Oxides (NOx)</div>
-      <div class="kpi-value" style="color: var(--purple);">15mg</div>
-      <div class="kpi-sub">air pollutant<br>avoided</div>
-    </div>
-    <div class="kpi c-red">
-      <div class="kpi-label">🌁 Particulate Matter (PM)</div>
-      <div class="kpi-value" style="color: var(--red);">13.4mg</div>
-      <div class="kpi-sub">fine particle pollution<br>avoided</div>
-    </div>
-    <div class="kpi c-orange">
-      <div class="kpi-label">🧪 Ammonia (NH₃)</div>
-      <div class="kpi-value" style="color: var(--orange);">2.31mg</div>
-      <div class="kpi-sub">toxic gas emission<br>avoided</div>
-    </div>
+  <!-- Error -->
+  <div id="error">
+    ⚠ Could not load data from Google Sheets.<br>
+    <span style="color:var(--muted); font-size:11px; margin-top:8px; display:block;">Make sure the sheet is set to "Anyone with the link can view."</span>
   </div>
 
-  <!-- Charts row 1 -->
-  <div class="section-label">// breakdown by type</div>
-  <div class="section-title">Emissions Distribution</div>
-  <div class="charts-grid">
-    <div class="chart-card">
-      <div class="section-label">// proportion by weight</div>
-      <div class="chart-title">Emissions Mix</div>
-      <div class="chart-wrap"><canvas id="donutChart"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="section-label">// all pollutants · log scale</div>
-      <div class="chart-title">All Emissions Avoided (mg)</div>
-      <div class="chart-wrap"><canvas id="hbarChart"></canvas></div>
-    </div>
-  </div>
+  <!-- Main dashboard — shown after data loads -->
+  <div id="main">
 
-  <!-- Charts row 2 -->
-  <div class="section-label" style="margin-top:4px;">// category comparison</div>
-  <div class="section-title">Greenhouse Gases vs. Other Pollutants</div>
-  <div class="charts-grid">
-    <div class="chart-card">
-      <div class="section-label">// CO₂, CH₄, N₂O</div>
-      <div class="chart-title">Greenhouse Gases Avoided (g)</div>
-      <div class="chart-wrap"><canvas id="ghgBar"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="section-label">// leachate, NOx, PM, NH₃</div>
-      <div class="chart-title">Other Emissions Avoided (mg)</div>
-      <div class="chart-wrap"><canvas id="otherBar"></canvas></div>
-    </div>
-  </div>
+    <header>
+      <div class="eyebrow">// Environmental Impact Summary · SP26</div>
+      <h1>Coffee Grounds<br>Impact Tracker</h1>
+      <div class="subtitle">Emissions diverted from landfill decomposition</div>
+    </header>
 
-  <!-- Reference table -->
-  <div class="chart-card" style="margin-top:16px;">
-    <div class="section-label">// reference</div>
-    <div class="chart-title" style="margin-bottom:18px;">All Pollutants — Full Breakdown</div>
-    <table class="breakdown-table">
-      <thead>
-        <tr>
-          <th>Pollutant</th>
-          <th>Category</th>
-          <th>Total Avoided</th>
-          <th>Relative Scale</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </div>
+    <div class="last-updated" id="lastUpdated"></div>
 
-  <footer>BB SP26 Environmental Metrics · Claude Sheet · Data current as of Mar 2026</footer>
+    <div class="badge-row">
+      <div class="badge"><span class="dot"></span> Sources: <strong id="bSources">—</strong></div>
+      <div class="badge"><span class="dot"></span> Partnerships: <strong id="bPartnerships">—</strong></div>
+      <div class="badge"><span class="dot"></span> Roast Types: <strong id="bRoastTypes">—</strong></div>
+    </div>
+
+    <div class="section-label">// total impact to date</div>
+    <div class="section-title">Key Metrics</div>
+
+    <div class="kpi-row">
+      <div class="kpi c-green" style="background: linear-gradient(135deg, var(--surface), rgba(74,222,128,0.06));">
+        <div class="kpi-label">☕ Grounds Repurposed</div>
+        <div class="kpi-value" style="color:var(--green-bright)" id="kvGrounds">—</div>
+        <div class="kpi-sub">coffee grounds diverted<br>from landfill</div>
+      </div>
+      <div class="kpi c-green">
+        <div class="kpi-label">🌿 CO₂ Avoided</div>
+        <div class="kpi-value" style="color:var(--green-bright)" id="kvCO2">—</div>
+        <div class="kpi-sub">carbon dioxide<br>not emitted</div>
+      </div>
+      <div class="kpi c-teal">
+        <div class="kpi-label">🔥 Methane (CH₄)</div>
+        <div class="kpi-value" style="color:var(--teal)" id="kvMethane">—</div>
+        <div class="kpi-sub">potent greenhouse gas<br>avoided</div>
+      </div>
+      <div class="kpi c-amber">
+        <div class="kpi-label">🌫 Nitrous Oxide (N₂O)</div>
+        <div class="kpi-value" style="color:var(--amber)" id="kvN2O">—</div>
+        <div class="kpi-sub">greenhouse gas<br>avoided</div>
+      </div>
+      <div class="kpi c-blue">
+        <div class="kpi-label">💧 Leachate</div>
+        <div class="kpi-value" style="color:var(--blue)" id="kvLeachate">—</div>
+        <div class="kpi-sub">soil &amp; groundwater<br>pollutant avoided</div>
+      </div>
+      <div class="kpi c-purple">
+        <div class="kpi-label">⚗️ Nitrogen Oxides (NOx)</div>
+        <div class="kpi-value" style="color:var(--purple)" id="kvNOx">—</div>
+        <div class="kpi-sub">air pollutant<br>avoided</div>
+      </div>
+      <div class="kpi c-red">
+        <div class="kpi-label">🌁 Particulate Matter (PM)</div>
+        <div class="kpi-value" style="color:var(--red)" id="kvPM">—</div>
+        <div class="kpi-sub">fine particle pollution<br>avoided</div>
+      </div>
+      <div class="kpi c-orange">
+        <div class="kpi-label">🧪 Ammonia (NH₃)</div>
+        <div class="kpi-value" style="color:var(--orange)" id="kvAmmonia">—</div>
+        <div class="kpi-sub">toxic gas emission<br>avoided</div>
+      </div>
+    </div>
+
+    <!-- Charts row 1 -->
+    <div class="section-label">// breakdown by type</div>
+    <div class="section-title">Emissions Distribution</div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="section-label">// proportion by weight</div>
+        <div class="chart-title">Emissions Mix</div>
+        <div class="chart-wrap"><canvas id="donutChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="section-label">// all pollutants · log scale</div>
+        <div class="chart-title">All Emissions Avoided (mg)</div>
+        <div class="chart-wrap"><canvas id="hbarChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Charts row 2 -->
+    <div class="section-label" style="margin-top:4px;">// category comparison</div>
+    <div class="section-title">Greenhouse Gases vs. Other Pollutants</div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="section-label">// CO₂, CH₄, N₂O</div>
+        <div class="chart-title">Greenhouse Gases Avoided (g)</div>
+        <div class="chart-wrap"><canvas id="ghgBar"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="section-label">// leachate, NOx, PM, NH₃</div>
+        <div class="chart-title">Other Emissions Avoided (mg)</div>
+        <div class="chart-wrap"><canvas id="otherBar"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Reference table -->
+    <div class="chart-card" style="margin-top:16px;">
+      <div class="section-label">// reference</div>
+      <div class="chart-title" style="margin-bottom:18px;">All Pollutants — Full Breakdown</div>
+      <table class="breakdown-table">
+        <thead>
+          <tr>
+            <th>Pollutant</th>
+            <th>Category</th>
+            <th>Total Avoided</th>
+            <th>Relative Scale</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+    <footer>BioBrew SP26 Environmental Metrics · Live from Google Sheets</footer>
+
+  </div><!-- /#main -->
 </div>
 
 <script>
-  // ─── Data from Claude sheet only ────────────────────────────────────────────
-  const d = {
-    co2:      411.04,    // g
-    methane:   28.896,   // g
-    leachate:   0.56,    // g
-    ammonia:    0.002307,// g
-    n2o:        0.00448, // g
-    nox:        0.015008,// g
-    pm:         0.01344, // g
-  };
+  const SHEET_ID = '1Y3QKMSy_ZPxlf5V5vHVuHXuS9IkBHQSpl6warj_dJQY';
+  const SHEET_NAME = 'Claude';
+  // Row indices in the sheet: row 1 = headers (index 0), row 20 = totals (index 19)
+  const HEADER_ROW = 0;
+  const TOTALS_ROW = 19;
 
-  Chart.defaults.color = '#6b8f6b';
-  Chart.defaults.font.family = "'DM Mono', monospace";
-  Chart.defaults.font.size = 10;
-  const grid = 'rgba(30,46,30,0.9)';
+  async function fetchSheetData() {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Network error');
+    const text = await res.text();
+    // Google wraps response in a callback — strip it
+    const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);/)[1]);
+    return json.table;
+  }
 
-  const tip = {
-    backgroundColor: '#0d170d',
-    borderColor: 'rgba(74,222,128,0.25)',
-    borderWidth: 1,
-    titleColor: '#4ade80',
-    bodyColor: '#a3c5a3',
-    padding: 10,
-    cornerRadius: 8,
-  };
+  function cellVal(row, col) {
+    const cell = row.c[col];
+    if (!cell || cell.v === null || cell.v === undefined) return null;
+    return cell.v;
+  }
 
-  // ─── Donut ───────────────────────────────────────────────────────────────────
-  new Chart(document.getElementById('donutChart'), {
-    type: 'doughnut',
-    data: {
-      labels: ['CO₂', 'CH₄', 'Leachate', 'NOx', 'PM', 'N₂O', 'NH₃'],
-      datasets: [{
-        data: [d.co2, d.methane, d.leachate, d.nox, d.pm, d.n2o, d.ammonia],
-        backgroundColor: ['rgba(74,222,128,0.85)','rgba(45,212,191,0.85)','rgba(96,165,250,0.85)','rgba(167,139,250,0.85)','rgba(248,113,113,0.85)','rgba(251,191,36,0.85)','rgba(251,146,60,0.85)'],
-        borderColor: '#0a0f0a',
-        borderWidth: 2,
-        hoverOffset: 10,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      cutout: '60%',
-      plugins: {
-        legend: { position: 'right', labels: { color: '#6b8f6b', boxWidth: 10, padding: 10 } },
-        tooltip: { ...tip, callbacks: { label: ctx => {
-          const v = ctx.raw;
-          return v >= 1 ? ` ${ctx.label}: ${v.toFixed(3)} g` : ` ${ctx.label}: ${(v*1000).toFixed(3)} mg`;
-        }}}
-      }
-    }
-  });
+  function fmt(val, unit) {
+    if (val === null) return '—';
+    const n = parseFloat(val);
+    if (unit === 'g') return n >= 1000 ? `${(n/1000).toFixed(2)}kg` : `${n}g`;
+    if (unit === 'mg') return `${n.toFixed(n < 1 ? 4 : n < 10 ? 2 : 1)}mg`;
+    return `${n}`;
+  }
 
-  // ─── Horizontal bar (log scale) ──────────────────────────────────────────────
-  new Chart(document.getElementById('hbarChart'), {
-    type: 'bar',
-    data: {
-      labels: ['CO₂', 'CH₄', 'Leachate', 'NOx', 'PM', 'N₂O', 'NH₃'],
-      datasets: [{
-        data: [d.co2*1000, d.methane*1000, d.leachate*1000, d.nox*1000, d.pm*1000, d.n2o*1000, d.ammonia*1000],
-        backgroundColor: ['rgba(74,222,128,0.75)','rgba(45,212,191,0.75)','rgba(96,165,250,0.75)','rgba(167,139,250,0.75)','rgba(248,113,113,0.75)','rgba(251,191,36,0.75)','rgba(251,146,60,0.75)'],
-        borderColor:      ['#4ade80','#2dd4bf','#60a5fa','#a78bfa','#f87171','#fbbf24','#fb923c'],
-        borderWidth: 1, borderRadius: 5,
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { ...tip, callbacks: { label: ctx => ` ${ctx.raw.toFixed(3)} mg` } }
+  const chartInstances = {};
+
+  function buildCharts(d) {
+    Chart.defaults.color = '#6b8f6b';
+    Chart.defaults.font.family = "'DM Mono', monospace";
+    Chart.defaults.font.size = 10;
+    const grid = 'rgba(30,46,30,0.9)';
+    const tip = {
+      backgroundColor: '#0d170d',
+      borderColor: 'rgba(74,222,128,0.25)',
+      borderWidth: 1,
+      titleColor: '#4ade80',
+      bodyColor: '#a3c5a3',
+      padding: 10,
+      cornerRadius: 8,
+    };
+
+    // Destroy old charts if re-rendering
+    Object.values(chartInstances).forEach(c => c.destroy());
+
+    // Donut
+    chartInstances.donut = new Chart(document.getElementById('donutChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['CO₂', 'CH₄', 'Leachate', 'NOx', 'PM', 'N₂O', 'NH₃'],
+        datasets: [{
+          data: [d.co2, d.methane, d.leachate, d.nox, d.pm, d.n2o, d.ammonia],
+          backgroundColor: ['rgba(74,222,128,0.85)','rgba(45,212,191,0.85)','rgba(96,165,250,0.85)','rgba(167,139,250,0.85)','rgba(248,113,113,0.85)','rgba(251,191,36,0.85)','rgba(251,146,60,0.85)'],
+          borderColor: '#0a0f0a', borderWidth: 2, hoverOffset: 10,
+        }]
       },
-      scales: {
-        x: { type: 'logarithmic', grid: { color: grid }, ticks: { color: '#4a6a4a' }, title: { display: true, text: 'mg (log scale)', color: '#4a6a4a' } },
-        y: { grid: { color: 'transparent' }, ticks: { color: '#a3c5a3' } }
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '60%',
+        plugins: {
+          legend: { position: 'right', labels: { color: '#6b8f6b', boxWidth: 10, padding: 10 } },
+          tooltip: { ...tip, callbacks: { label: ctx => {
+            const v = ctx.raw;
+            return v >= 1 ? ` ${ctx.label}: ${v.toFixed(3)} g` : ` ${ctx.label}: ${(v*1000).toFixed(3)} mg`;
+          }}}
+        }
       }
-    }
-  });
+    });
 
-  // ─── GHG bar ─────────────────────────────────────────────────────────────────
-  new Chart(document.getElementById('ghgBar'), {
-    type: 'bar',
-    data: {
-      labels: ['CO₂', 'CH₄', 'N₂O'],
-      datasets: [{
-        data: [d.co2, d.methane, d.n2o],
-        backgroundColor: ['rgba(74,222,128,0.75)','rgba(45,212,191,0.75)','rgba(251,191,36,0.65)'],
-        borderColor: ['#4ade80','#2dd4bf','#fbbf24'],
-        borderWidth: 1, borderRadius: 7,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { ...tip, callbacks: { label: ctx => ` ${ctx.raw.toFixed(4)} g avoided` } }
+    // Horizontal bar
+    chartInstances.hbar = new Chart(document.getElementById('hbarChart'), {
+      type: 'bar',
+      data: {
+        labels: ['CO₂', 'CH₄', 'Leachate', 'NOx', 'PM', 'N₂O', 'NH₃'],
+        datasets: [{
+          data: [d.co2*1000, d.methane*1000, d.leachate*1000, d.nox*1000, d.pm*1000, d.n2o*1000, d.ammonia*1000],
+          backgroundColor: ['rgba(74,222,128,0.75)','rgba(45,212,191,0.75)','rgba(96,165,250,0.75)','rgba(167,139,250,0.75)','rgba(248,113,113,0.75)','rgba(251,191,36,0.75)','rgba(251,146,60,0.75)'],
+          borderColor: ['#4ade80','#2dd4bf','#60a5fa','#a78bfa','#f87171','#fbbf24','#fb923c'],
+          borderWidth: 1, borderRadius: 5,
+        }]
       },
-      scales: {
-        x: { grid: { color: grid }, ticks: { color: '#a3c5a3' } },
-        y: { grid: { color: grid }, ticks: { color: '#4a6a4a' }, title: { display: true, text: 'grams', color: '#4a6a4a' } }
+      options: {
+        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { ...tip, callbacks: { label: ctx => ` ${ctx.raw.toFixed(3)} mg` } } },
+        scales: {
+          x: { type: 'logarithmic', grid: { color: grid }, ticks: { color: '#4a6a4a' }, title: { display: true, text: 'mg (log scale)', color: '#4a6a4a' } },
+          y: { grid: { color: 'transparent' }, ticks: { color: '#a3c5a3' } }
+        }
       }
-    }
-  });
+    });
 
-  // ─── Other pollutants bar ─────────────────────────────────────────────────────
-  new Chart(document.getElementById('otherBar'), {
-    type: 'bar',
-    data: {
-      labels: ['Leachate', 'NOx', 'PM', 'NH₃'],
-      datasets: [{
-        data: [d.leachate*1000, d.nox*1000, d.pm*1000, d.ammonia*1000],
-        backgroundColor: ['rgba(96,165,250,0.75)','rgba(167,139,250,0.75)','rgba(248,113,113,0.75)','rgba(251,146,60,0.75)'],
-        borderColor: ['#60a5fa','#a78bfa','#f87171','#fb923c'],
-        borderWidth: 1, borderRadius: 7,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { ...tip, callbacks: { label: ctx => ` ${ctx.raw.toFixed(4)} mg avoided` } }
+    // GHG bar
+    chartInstances.ghg = new Chart(document.getElementById('ghgBar'), {
+      type: 'bar',
+      data: {
+        labels: ['CO₂', 'CH₄', 'N₂O'],
+        datasets: [{
+          data: [d.co2, d.methane, d.n2o],
+          backgroundColor: ['rgba(74,222,128,0.75)','rgba(45,212,191,0.75)','rgba(251,191,36,0.65)'],
+          borderColor: ['#4ade80','#2dd4bf','#fbbf24'],
+          borderWidth: 1, borderRadius: 7,
+        }]
       },
-      scales: {
-        x: { grid: { color: grid }, ticks: { color: '#a3c5a3' } },
-        y: { grid: { color: grid }, ticks: { color: '#4a6a4a' }, title: { display: true, text: 'milligrams', color: '#4a6a4a' } }
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { ...tip, callbacks: { label: ctx => ` ${ctx.raw.toFixed(4)} g avoided` } } },
+        scales: {
+          x: { grid: { color: grid }, ticks: { color: '#a3c5a3' } },
+          y: { grid: { color: grid }, ticks: { color: '#4a6a4a' }, title: { display: true, text: 'grams', color: '#4a6a4a' } }
+        }
       }
+    });
+
+    // Other pollutants bar
+    chartInstances.other = new Chart(document.getElementById('otherBar'), {
+      type: 'bar',
+      data: {
+        labels: ['Leachate', 'NOx', 'PM', 'NH₃'],
+        datasets: [{
+          data: [d.leachate*1000, d.nox*1000, d.pm*1000, d.ammonia*1000],
+          backgroundColor: ['rgba(96,165,250,0.75)','rgba(167,139,250,0.75)','rgba(248,113,113,0.75)','rgba(251,146,60,0.75)'],
+          borderColor: ['#60a5fa','#a78bfa','#f87171','#fb923c'],
+          borderWidth: 1, borderRadius: 7,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { ...tip, callbacks: { label: ctx => ` ${ctx.raw.toFixed(4)} mg avoided` } } },
+        scales: {
+          x: { grid: { color: grid }, ticks: { color: '#a3c5a3' } },
+          y: { grid: { color: grid }, ticks: { color: '#4a6a4a' }, title: { display: true, text: 'milligrams', color: '#4a6a4a' } }
+        }
+      }
+    });
+  }
+
+  function buildTable(d) {
+    const rows = [
+      { name: 'CO₂',                    cat: 'ghg',   val: d.co2*1000,      disp: `${d.co2} g`,                          color: '#4ade80' },
+      { name: 'Methane (CH₄)',           cat: 'ghg',   val: d.methane*1000,  disp: `${d.methane} g`,                      color: '#2dd4bf' },
+      { name: 'Leachate',                cat: 'other', val: d.leachate*1000, disp: `${(d.leachate*1000).toFixed(2)} mg`,   color: '#60a5fa' },
+      { name: 'Nitrous Oxide (N₂O)',     cat: 'ghg',   val: d.n2o*1000,      disp: `${(d.n2o*1000).toFixed(3)} mg`,       color: '#fbbf24' },
+      { name: 'Nitrogen Oxides (NOx)',   cat: 'other', val: d.nox*1000,      disp: `${(d.nox*1000).toFixed(3)} mg`,       color: '#a78bfa' },
+      { name: 'Particulate Matter (PM)', cat: 'other', val: d.pm*1000,       disp: `${(d.pm*1000).toFixed(3)} mg`,        color: '#f87171' },
+      { name: 'Ammonia (NH₃)',           cat: 'other', val: d.ammonia*1000,  disp: `${(d.ammonia*1000).toFixed(4)} mg`,   color: '#fb923c' },
+    ];
+    const maxVal = Math.max(...rows.map(r => r.val));
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    rows.forEach(r => {
+      const pct = (r.val / maxVal * 100).toFixed(1);
+      tbody.innerHTML += `
+        <tr>
+          <td style="color:var(--text);font-weight:500">${r.name}</td>
+          <td><span class="tag tag-${r.cat}">${r.cat === 'ghg' ? 'greenhouse gas' : 'other emission'}</span></td>
+          <td style="color:${r.color};font-weight:500">${r.disp}</td>
+          <td><div class="inline-bar"><div class="inline-bar-fill" style="width:${pct}%;background:${r.color}"></div></div></td>
+        </tr>`;
+    });
+  }
+
+  async function init() {
+    try {
+      const table = await fetchSheetData();
+      const headers = table.rows[HEADER_ROW];
+      const totals  = table.rows[TOTALS_ROW];
+
+      // Map header names to column indices
+      const colMap = {};
+      headers.c.forEach((cell, i) => {
+        if (cell && cell.v) colMap[cell.v.trim()] = i;
+      });
+
+      // Pull values by header name
+      const g = key => {
+        const idx = colMap[key];
+        return idx !== undefined ? parseFloat(cellVal(totals, idx)) || 0 : 0;
+      };
+
+      const d = {
+        sources:      g('Sources'),
+        partnerships: g('Partnerships'),
+        roastTypes:   g('Roast Types'),
+        grounds:      g('Grounds Used (g)'),
+        co2:          g('CO2 Reduced (g)'),
+        methane:      g('Methane (CH4) (g)'),
+        leachate:     g('Leachate (g)'),
+        ammonia:      g('Ammonia (g)'),
+        n2o:          g('Nitrous Oxide (N2O) (g)'),
+        nox:          g('Nitrogen Oxides (NOx) (g)'),
+        pm:           g('Particulate Matter (PM) (g)'),
+      };
+
+      // Populate badges
+      document.getElementById('bSources').textContent      = d.sources;
+      document.getElementById('bPartnerships').textContent = d.partnerships;
+      document.getElementById('bRoastTypes').textContent   = d.roastTypes;
+
+      // Populate KPI cards
+      document.getElementById('kvGrounds').textContent  = fmt(d.grounds, 'g');
+      document.getElementById('kvCO2').textContent      = fmt(d.co2, 'g');
+      document.getElementById('kvMethane').textContent  = fmt(d.methane, 'g');
+      document.getElementById('kvN2O').textContent      = fmt(d.n2o * 1000, 'mg');
+      document.getElementById('kvLeachate').textContent = fmt(d.leachate * 1000, 'mg');
+      document.getElementById('kvNOx').textContent      = fmt(d.nox * 1000, 'mg');
+      document.getElementById('kvPM').textContent       = fmt(d.pm * 1000, 'mg');
+      document.getElementById('kvAmmonia').textContent  = fmt(d.ammonia * 1000, 'mg');
+
+      // Last updated
+      document.getElementById('lastUpdated').textContent =
+        `// last fetched: ${new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}`;
+
+      buildCharts(d);
+      buildTable(d);
+
+      // Show dashboard, hide loader
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('main').style.display    = 'block';
+
+    } catch (err) {
+      console.error(err);
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error').style.display   = 'block';
     }
-  });
+  }
 
-  // ─── Table ────────────────────────────────────────────────────────────────────
-  const rows = [
-    { name: 'CO₂',                    cat: 'ghg',   val: d.co2*1000,      disp: `${d.co2} g`,                     color: '#4ade80' },
-    { name: 'Methane (CH₄)',           cat: 'ghg',   val: d.methane*1000,  disp: `${d.methane} g`,                 color: '#2dd4bf' },
-    { name: 'Leachate',                cat: 'other', val: d.leachate*1000, disp: `${(d.leachate*1000).toFixed(0)} mg`, color: '#60a5fa' },
-    { name: 'Nitrous Oxide (N₂O)',     cat: 'ghg',   val: d.n2o*1000,      disp: `${(d.n2o*1000).toFixed(3)} mg`, color: '#fbbf24' },
-    { name: 'Nitrogen Oxides (NOx)',   cat: 'other', val: d.nox*1000,      disp: `${(d.nox*1000).toFixed(3)} mg`, color: '#a78bfa' },
-    { name: 'Particulate Matter (PM)', cat: 'other', val: d.pm*1000,       disp: `${(d.pm*1000).toFixed(3)} mg`,  color: '#f87171' },
-    { name: 'Ammonia (NH₃)',           cat: 'other', val: d.ammonia*1000,  disp: `${(d.ammonia*1000).toFixed(4)} mg`, color: '#fb923c' },
-  ];
-
-  const maxVal = Math.max(...rows.map(r => r.val));
-  const tbody = document.getElementById('tableBody');
-  rows.forEach(r => {
-    const pct = (r.val / maxVal * 100).toFixed(1);
-    tbody.innerHTML += `
-      <tr>
-        <td style="color:var(--text);font-weight:500">${r.name}</td>
-        <td><span class="tag tag-${r.cat}">${r.cat === 'ghg' ? 'greenhouse gas' : 'other emission'}</span></td>
-        <td style="color:${r.color};font-weight:500">${r.disp}</td>
-        <td><div class="inline-bar"><div class="inline-bar-fill" style="width:${pct}%;background:${r.color}"></div></div></td>
-      </tr>`;
-  });
+  init();
 </script>
 </body>
 </html>
