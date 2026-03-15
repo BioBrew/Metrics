@@ -618,6 +618,11 @@
     try {
       const table = await fetchSheetData();
 
+      // DEBUG — log raw table to console
+      console.log('Total rows returned:', table.rows.length);
+      console.log('Row 20 raw:', JSON.stringify(table.rows[19]));
+      console.log('Row 1 raw:', JSON.stringify(table.rows[0]));
+
       // Pull values by column index directly from totals row (row 20, index 19)
       // Col 0: Prototyping Date (TOTAL: label — skip)
       // Col 1: Sourcing (# sources)
