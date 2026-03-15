@@ -472,7 +472,7 @@
 <script>
   const SHEET_ID   = '1Y3QKMSy_ZPxlf5V5vHVuHXuS9IkBHQSpl6warj_dJQY';
   const SHEET_NAME = 'Tracker';
-  const TOTALS_ROW = 19; // row 20, zero-indexed
+  const TOTALS_ROW = 20; // row 20 in sheet, offset by 1 due to frozen header row
 
   async function fetchSheetData() {
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
