@@ -8,375 +8,100 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0f0a;
-    --surface: #111811;
-    --surface2: #172017;
-    --border: #1e2e1e;
-    --green-bright: #4ade80;
-    --teal: #2dd4bf;
-    --blue: #60a5fa;
-    --amber: #fbbf24;
-    --purple: #a78bfa;
-    --red: #f87171;
-    --orange: #fb923c;
-    --text: #e8f5e8;
-    --muted: #6b8f6b;
-    --font-display: 'Syne', sans-serif;
-    --font-mono: 'DM Mono', monospace;
+    --bg: #0a0f0a; --surface: #111811; --surface2: #172017; --border: #1e2e1e;
+    --green-bright: #4ade80; --teal: #2dd4bf; --blue: #60a5fa; --amber: #fbbf24;
+    --purple: #a78bfa; --red: #f87171; --orange: #fb923c;
+    --text: #e8f5e8; --muted: #6b8f6b;
+    --font-display: 'Syne', sans-serif; --font-mono: 'DM Mono', monospace;
   }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-display); min-height:100vh; padding:32px 24px 60px; position:relative; overflow-x:hidden; }
+  body::before { content:''; position:fixed; inset:0; background-image:linear-gradient(rgba(74,222,128,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(74,222,128,0.03) 1px,transparent 1px); background-size:48px 48px; pointer-events:none; z-index:0; }
+  .wrapper { max-width:1100px; margin:0 auto; position:relative; z-index:1; }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  #loading { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; gap:20px; }
+  .spinner { width:36px; height:36px; border:2px solid var(--border); border-top-color:var(--green-bright); border-radius:50%; animation:spin 0.8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .loading-text { font-family:var(--font-mono); font-size:12px; color:var(--muted); letter-spacing:0.15em; text-transform:uppercase; }
+  #error { display:none; text-align:center; padding:60px 20px; font-family:var(--font-mono); color:var(--red); font-size:13px; line-height:2; }
+  #main { display:none; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-display);
-    min-height: 100vh;
-    padding: 32px 24px 60px;
-    position: relative;
-    overflow-x: hidden;
-  }
+  header { margin-bottom:40px; animation:fadeUp 0.6s ease both; }
+  .eyebrow { font-family:var(--font-mono); font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:var(--green-bright); opacity:0.7; margin-bottom:10px; }
+  h1 { font-size:clamp(28px,5vw,52px); font-weight:800; letter-spacing:-0.03em; line-height:1.05; background:linear-gradient(135deg,#e8f5e8 30%,var(--green-bright)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:12px; }
+  .subtitle { font-family:var(--font-mono); font-size:13px; color:var(--muted); letter-spacing:0.02em; }
 
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(74,222,128,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(74,222,128,0.03) 1px, transparent 1px);
-    background-size: 48px 48px;
-    pointer-events: none;
-    z-index: 0;
-  }
+  .badge-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:36px; animation:fadeUp 0.6s 0.1s ease both; }
+  .badge { background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:7px 16px; font-family:var(--font-mono); font-size:11px; color:var(--muted); display:flex; align-items:center; gap:8px; }
+  .badge strong { color:var(--green-bright); font-weight:500; }
+  .badge .dot { width:5px; height:5px; border-radius:50%; background:var(--green-bright); box-shadow:0 0 5px var(--green-bright); }
 
-  .wrapper {
-    max-width: 1100px;
-    margin: 0 auto;
-    position: relative;
-    z-index: 1;
-  }
+  .section-label { font-family:var(--font-mono); font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--green-bright); opacity:0.6; margin-bottom:6px; }
+  .section-title { font-size:18px; font-weight:700; letter-spacing:-0.02em; margin-bottom:16px; }
 
-  #loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 60vh;
-    gap: 20px;
-  }
+  .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:36px; }
+  @media(max-width:800px){ .kpi-row { grid-template-columns:repeat(2,1fr); } }
+  @media(max-width:480px){ .kpi-row { grid-template-columns:1fr; } }
 
-  .spinner {
-    width: 36px; height: 36px;
-    border: 2px solid var(--border);
-    border-top-color: var(--green-bright);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
+  .kpi { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px 18px; position:relative; overflow:hidden; animation:fadeUp 0.6s ease both; transition:border-color 0.3s,transform 0.2s; }
+  .kpi:hover { transform:translateY(-2px); }
+  .kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+  .kpi.c-green { border-color:rgba(74,222,128,0.3); } .kpi.c-green::before { background:linear-gradient(90deg,transparent,#4ade80,transparent); }
+  .kpi.c-teal::before  { background:linear-gradient(90deg,transparent,#2dd4bf,transparent); }
+  .kpi.c-blue::before  { background:linear-gradient(90deg,transparent,#60a5fa,transparent); }
+  .kpi.c-amber::before { background:linear-gradient(90deg,transparent,#fbbf24,transparent); }
+  .kpi.c-purple::before{ background:linear-gradient(90deg,transparent,#a78bfa,transparent); }
+  .kpi.c-red::before   { background:linear-gradient(90deg,transparent,#f87171,transparent); }
+  .kpi.c-orange::before{ background:linear-gradient(90deg,transparent,#fb923c,transparent); }
+  .kpi-label { font-family:var(--font-mono); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+  .kpi-value { font-size:30px; font-weight:800; letter-spacing:-0.04em; line-height:1; margin-bottom:4px; }
+  .kpi-sub { font-family:var(--font-mono); font-size:10px; color:var(--muted); line-height:1.4; }
 
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+  @media(max-width:680px){ .charts-grid { grid-template-columns:1fr; } }
+  .chart-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:24px; animation:fadeUp 0.7s ease both; transition:border-color 0.3s; }
+  .chart-card:hover { border-color:rgba(74,222,128,0.18); }
+  .chart-title { font-size:14px; font-weight:700; margin-bottom:16px; color:var(--text); }
+  .chart-wrap { position:relative; height:240px; }
 
-  .loading-text {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--muted);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-  }
+  .breakdown-table { width:100%; border-collapse:collapse; font-family:var(--font-mono); font-size:12px; }
+  .breakdown-table th { text-align:left; color:var(--muted); font-size:9px; letter-spacing:0.18em; text-transform:uppercase; padding:8px 14px; border-bottom:1px solid var(--border); }
+  .breakdown-table td { padding:11px 14px; border-bottom:1px solid rgba(30,46,30,0.5); }
+  .breakdown-table tr:last-child td { border-bottom:none; }
+  .breakdown-table tr:hover td { background:rgba(74,222,128,0.03); }
+  .tag { display:inline-block; padding:2px 8px; border-radius:4px; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; font-weight:500; }
+  .tag-ghg   { background:rgba(74,222,128,0.12); color:var(--green-bright); }
+  .tag-other { background:rgba(96,165,250,0.12); color:var(--blue); }
+  .inline-bar { height:5px; border-radius:3px; background:var(--border); overflow:hidden; width:110px; }
+  .inline-bar-fill { height:100%; border-radius:3px; opacity:0.8; }
 
-  #error {
-    display: none;
-    text-align: center;
-    padding: 60px 20px;
-    font-family: var(--font-mono);
-    color: var(--red);
-    font-size: 13px;
-    line-height: 2;
-  }
-
-  #main { display: none; }
-
-  header { margin-bottom: 40px; animation: fadeUp 0.6s ease both; }
-
-  .eyebrow {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--green-bright);
-    opacity: 0.7;
-    margin-bottom: 10px;
-  }
-
-  h1 {
-    font-size: clamp(28px, 5vw, 52px);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.05;
-    background: linear-gradient(135deg, #e8f5e8 30%, var(--green-bright));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 12px;
-  }
-
-  .subtitle {
-    font-family: var(--font-mono);
-    font-size: 13px;
-    color: var(--muted);
-    letter-spacing: 0.02em;
-  }
-
-  .badge-row {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 36px;
-    animation: fadeUp 0.6s 0.1s ease both;
-  }
-
-  .badge {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 7px 16px;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .badge strong { color: var(--green-bright); font-weight: 500; }
-  .badge .dot {
-    width: 5px; height: 5px;
-    border-radius: 50%;
-    background: var(--green-bright);
-    box-shadow: 0 0 5px var(--green-bright);
-  }
-
-  .section-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--green-bright);
-    opacity: 0.6;
-    margin-bottom: 6px;
-  }
-
-  .section-title {
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-bottom: 16px;
-  }
-
-  .kpi-row {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 36px;
-  }
-
-  @media (max-width: 800px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 480px) { .kpi-row { grid-template-columns: 1fr; } }
-
-  .kpi {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 20px 18px;
-    position: relative;
-    overflow: hidden;
-    animation: fadeUp 0.6s ease both;
-    transition: border-color 0.3s, transform 0.2s;
-  }
-
-  .kpi:hover { transform: translateY(-2px); }
-
-  .kpi::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-  }
-
-  .kpi.c-green  { border-color: rgba(74,222,128,0.3); }
-  .kpi.c-green::before  { background: linear-gradient(90deg, transparent, #4ade80, transparent); }
-  .kpi.c-teal::before   { background: linear-gradient(90deg, transparent, #2dd4bf, transparent); }
-  .kpi.c-blue::before   { background: linear-gradient(90deg, transparent, #60a5fa, transparent); }
-  .kpi.c-amber::before  { background: linear-gradient(90deg, transparent, #fbbf24, transparent); }
-  .kpi.c-purple::before { background: linear-gradient(90deg, transparent, #a78bfa, transparent); }
-  .kpi.c-red::before    { background: linear-gradient(90deg, transparent, #f87171, transparent); }
-  .kpi.c-orange::before { background: linear-gradient(90deg, transparent, #fb923c, transparent); }
-
-  .kpi-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
-
-  .kpi-value {
-    font-size: 30px;
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-
-  .kpi-sub {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted);
-    line-height: 1.4;
-  }
-
-  .charts-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-
-  @media (max-width: 680px) { .charts-grid { grid-template-columns: 1fr; } }
-
-  .chart-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-    animation: fadeUp 0.7s ease both;
-    transition: border-color 0.3s;
-  }
-
-  .chart-card:hover { border-color: rgba(74,222,128,0.18); }
-
-  .chart-title {
-    font-size: 14px;
-    font-weight: 700;
-    margin-bottom: 16px;
-    color: var(--text);
-  }
-
-  .chart-wrap { position: relative; height: 240px; }
-
-  .breakdown-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-family: var(--font-mono);
-    font-size: 12px;
-  }
-
-  .breakdown-table th {
-    text-align: left;
-    color: var(--muted);
-    font-size: 9px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    padding: 8px 14px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .breakdown-table td {
-    padding: 11px 14px;
-    border-bottom: 1px solid rgba(30,46,30,0.5);
-  }
-
-  .breakdown-table tr:last-child td { border-bottom: none; }
-  .breakdown-table tr:hover td { background: rgba(74,222,128,0.03); }
-
-  .tag {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 9px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    font-weight: 500;
-  }
-
-  .tag-ghg   { background: rgba(74,222,128,0.12); color: var(--green-bright); }
-  .tag-other { background: rgba(96,165,250,0.12); color: var(--blue); }
-
-  .inline-bar {
-    height: 5px;
-    border-radius: 3px;
-    background: var(--border);
-    overflow: hidden;
-    width: 110px;
-  }
-
-  .inline-bar-fill { height: 100%; border-radius: 3px; opacity: 0.8; }
-
-  .last-updated {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted);
-    opacity: 0.5;
-    margin-bottom: 28px;
-    animation: fadeUp 0.6s 0.15s ease both;
-  }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(18px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .kpi:nth-child(1) { animation-delay: 0.06s; }
-  .kpi:nth-child(2) { animation-delay: 0.12s; }
-  .kpi:nth-child(3) { animation-delay: 0.18s; }
-  .kpi:nth-child(4) { animation-delay: 0.24s; }
-  .kpi:nth-child(5) { animation-delay: 0.30s; }
-  .kpi:nth-child(6) { animation-delay: 0.36s; }
-  .kpi:nth-child(7) { animation-delay: 0.42s; }
-  .kpi:nth-child(8) { animation-delay: 0.48s; }
-
-  footer {
-    margin-top: 48px;
-    text-align: center;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--muted);
-    opacity: 0.4;
-    letter-spacing: 0.1em;
-  }
+  .last-updated { font-family:var(--font-mono); font-size:10px; color:var(--muted); opacity:0.5; margin-bottom:28px; animation:fadeUp 0.6s 0.15s ease both; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  .kpi:nth-child(1){animation-delay:0.06s} .kpi:nth-child(2){animation-delay:0.12s} .kpi:nth-child(3){animation-delay:0.18s} .kpi:nth-child(4){animation-delay:0.24s}
+  .kpi:nth-child(5){animation-delay:0.30s} .kpi:nth-child(6){animation-delay:0.36s} .kpi:nth-child(7){animation-delay:0.42s} .kpi:nth-child(8){animation-delay:0.48s}
+  footer { margin-top:48px; text-align:center; font-family:var(--font-mono); font-size:10px; color:var(--muted); opacity:0.4; letter-spacing:0.1em; }
 </style>
 </head>
 <body>
 <div class="wrapper">
-
-  <div id="loading">
-    <div class="spinner"></div>
-    <div class="loading-text">Fetching latest data...</div>
-  </div>
-
+  <div id="loading"><div class="spinner"></div><div class="loading-text">Fetching latest data...</div></div>
   <div id="error"></div>
-
   <div id="main">
-
     <header>
       <div class="eyebrow">// Environmental Impact Summary · SP26</div>
       <h1>Coffee Grounds<br>Impact Tracker</h1>
       <div class="subtitle">Emissions diverted from landfill decomposition</div>
     </header>
-
     <div class="last-updated" id="lastUpdated"></div>
-
     <div class="badge-row">
       <div class="badge"><span class="dot"></span> Sources: <strong id="bSources">—</strong></div>
       <div class="badge"><span class="dot"></span> Partnerships: <strong>5</strong></div>
       <div class="badge"><span class="dot"></span> Roast Types: <strong id="bRoastTypes">—</strong></div>
     </div>
-
     <div class="section-label">// total impact to date</div>
     <div class="section-title">Key Metrics</div>
-
     <div class="kpi-row">
-      <div class="kpi c-green" style="background: linear-gradient(135deg, var(--surface), rgba(74,222,128,0.06));">
+      <div class="kpi c-green" style="background:linear-gradient(135deg,var(--surface),rgba(74,222,128,0.06))">
         <div class="kpi-label">☕ Grounds Repurposed</div>
         <div class="kpi-value" style="color:var(--green-bright)" id="kvGrounds">—</div>
         <div class="kpi-sub">coffee grounds diverted<br>from landfill</div>
@@ -432,7 +157,6 @@
         <div class="chart-wrap"><canvas id="hbarChart"></canvas></div>
       </div>
     </div>
-
     <div class="section-label" style="margin-top:4px;">// category comparison</div>
     <div class="section-title">Greenhouse Gases vs. Other Pollutants</div>
     <div class="charts-grid">
@@ -447,32 +171,28 @@
         <div class="chart-wrap"><canvas id="otherBar"></canvas></div>
       </div>
     </div>
-
     <div class="chart-card" style="margin-top:16px;">
       <div class="section-label">// reference</div>
       <div class="chart-title" style="margin-bottom:18px;">All Pollutants — Full Breakdown</div>
       <table class="breakdown-table">
-        <thead>
-          <tr>
-            <th>Pollutant</th>
-            <th>Category</th>
-            <th>Total Avoided</th>
-            <th>Relative Scale</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Pollutant</th><th>Category</th><th>Total Avoided</th><th>Relative Scale</th></tr></thead>
         <tbody id="tableBody"></tbody>
       </table>
     </div>
-
     <footer>BioBrew SP26 Environmental Metrics · Live from Google Sheets</footer>
-
   </div>
 </div>
 
 <script>
   const SHEET_ID   = '1Y3QKMSy_ZPxlf5V5vHVuHXuS9IkBHQSpl6warj_dJQY';
-  const SHEET_NAME = 'Tracker';
-  const TOTALS_ROW = 20; // row 20 in sheet, offset by 1 due to frozen header row
+  const SHEET_NAME = 'Claude';
+
+  // Column order in Claude tab (0-indexed):
+  // 0: Sourcing, 1: Type, 2: Grams Used, 3: CO2 Reduced (g),
+  // 4: Methane (CH4) Reduced (g), 5: Leachate Reduced (g),
+  // 6: Ammonia Reduced (g), 7: Nitrous Oxide (N2O) (g),
+  // 8: Nitrogen Oxides (NOx) (g), 9: Particulate Matter (PM) (g)
+  // Row 1 = headers, Row 2 = totals (index 1)
 
   async function fetchSheetData() {
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
@@ -480,137 +200,69 @@
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
     const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);/);
-    if (!match) throw new Error('Could not parse Google Sheets response');
-    return JSON.parse(match[1]).table;
+    if (!match) throw new Error('Could not parse response');
+    const table = JSON.parse(match[1]).table;
+    console.log('Claude tab rows:', table.rows.length);
+    console.log('Row 0:', JSON.stringify(table.rows[0]));
+    console.log('Row 1:', JSON.stringify(table.rows[1]));
+    return table;
   }
 
-  const chartInstances = {};
+  const charts = {};
 
   function buildCharts(d) {
     Chart.defaults.color = '#6b8f6b';
     Chart.defaults.font.family = "'DM Mono', monospace";
     Chart.defaults.font.size = 10;
     const grid = 'rgba(30,46,30,0.9)';
-    const tip = {
-      backgroundColor: '#0d170d',
-      borderColor: 'rgba(74,222,128,0.25)',
-      borderWidth: 1,
-      titleColor: '#4ade80',
-      bodyColor: '#a3c5a3',
-      padding: 10,
-      cornerRadius: 8,
-    };
+    const tip = { backgroundColor:'#0d170d', borderColor:'rgba(74,222,128,0.25)', borderWidth:1, titleColor:'#4ade80', bodyColor:'#a3c5a3', padding:10, cornerRadius:8 };
 
-    Object.values(chartInstances).forEach(c => c.destroy());
+    Object.values(charts).forEach(c => c.destroy());
 
-    chartInstances.donut = new Chart(document.getElementById('donutChart'), {
+    charts.donut = new Chart(document.getElementById('donutChart'), {
       type: 'doughnut',
       data: {
-        labels: ['CO₂', 'CH₄', 'Leachate', 'NOx', 'PM', 'N₂O', 'NH₃'],
-        datasets: [{
-          data: [d.co2, d.methane, d.leachate, d.nox, d.pm, d.n2o, d.ammonia],
-          backgroundColor: ['rgba(74,222,128,0.85)','rgba(45,212,191,0.85)','rgba(96,165,250,0.85)','rgba(167,139,250,0.85)','rgba(248,113,113,0.85)','rgba(251,191,36,0.85)','rgba(251,146,60,0.85)'],
-          borderColor: '#0a0f0a', borderWidth: 2, hoverOffset: 10,
-        }]
+        labels: ['CO₂','CH₄','Leachate','NOx','PM','N₂O','NH₃'],
+        datasets: [{ data:[d.co2,d.methane,d.leachate,d.nox,d.pm,d.n2o,d.ammonia], backgroundColor:['rgba(74,222,128,0.85)','rgba(45,212,191,0.85)','rgba(96,165,250,0.85)','rgba(167,139,250,0.85)','rgba(248,113,113,0.85)','rgba(251,191,36,0.85)','rgba(251,146,60,0.85)'], borderColor:'#0a0f0a', borderWidth:2, hoverOffset:10 }]
       },
-      options: {
-        responsive: true, maintainAspectRatio: false, cutout: '60%',
-        plugins: {
-          legend: { position: 'right', labels: { color: '#6b8f6b', boxWidth: 10, padding: 10 } },
-          tooltip: { ...tip, callbacks: { label: ctx => {
-            const v = ctx.raw;
-            return v >= 1 ? ` ${ctx.label}: ${v.toFixed(3)} g` : ` ${ctx.label}: ${(v*1000).toFixed(3)} mg`;
-          }}}
-        }
-      }
+      options: { responsive:true, maintainAspectRatio:false, cutout:'60%', plugins:{ legend:{ position:'right', labels:{ color:'#6b8f6b', boxWidth:10, padding:10 } }, tooltip:{ ...tip, callbacks:{ label: ctx => { const v=ctx.raw; return v>=1?` ${ctx.label}: ${v.toFixed(3)} g`:` ${ctx.label}: ${(v*1000).toFixed(3)} mg`; } } } } }
     });
 
-    chartInstances.hbar = new Chart(document.getElementById('hbarChart'), {
+    charts.hbar = new Chart(document.getElementById('hbarChart'), {
       type: 'bar',
-      data: {
-        labels: ['CO₂', 'CH₄', 'Leachate', 'NOx', 'PM', 'N₂O', 'NH₃'],
-        datasets: [{
-          data: [d.co2*1000, d.methane*1000, d.leachate*1000, d.nox*1000, d.pm*1000, d.n2o*1000, d.ammonia*1000],
-          backgroundColor: ['rgba(74,222,128,0.75)','rgba(45,212,191,0.75)','rgba(96,165,250,0.75)','rgba(167,139,250,0.75)','rgba(248,113,113,0.75)','rgba(251,191,36,0.75)','rgba(251,146,60,0.75)'],
-          borderColor: ['#4ade80','#2dd4bf','#60a5fa','#a78bfa','#f87171','#fbbf24','#fb923c'],
-          borderWidth: 1, borderRadius: 5,
-        }]
-      },
-      options: {
-        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: { ...tip, callbacks: { label: ctx => ` ${ctx.raw.toFixed(3)} mg` } } },
-        scales: {
-          x: { type: 'logarithmic', grid: { color: grid }, ticks: { color: '#4a6a4a' }, title: { display: true, text: 'mg (log scale)', color: '#4a6a4a' } },
-          y: { grid: { color: 'transparent' }, ticks: { color: '#a3c5a3' } }
-        }
-      }
+      data: { labels:['CO₂','CH₄','Leachate','NOx','PM','N₂O','NH₃'], datasets:[{ data:[d.co2*1000,d.methane*1000,d.leachate*1000,d.nox*1000,d.pm*1000,d.n2o*1000,d.ammonia*1000], backgroundColor:['rgba(74,222,128,0.75)','rgba(45,212,191,0.75)','rgba(96,165,250,0.75)','rgba(167,139,250,0.75)','rgba(248,113,113,0.75)','rgba(251,191,36,0.75)','rgba(251,146,60,0.75)'], borderColor:['#4ade80','#2dd4bf','#60a5fa','#a78bfa','#f87171','#fbbf24','#fb923c'], borderWidth:1, borderRadius:5 }] },
+      options: { indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false }, tooltip:{ ...tip, callbacks:{ label: ctx=>` ${ctx.raw.toFixed(3)} mg` } } }, scales:{ x:{ type:'logarithmic', grid:{ color:grid }, ticks:{ color:'#4a6a4a' }, title:{ display:true, text:'mg (log scale)', color:'#4a6a4a' } }, y:{ grid:{ color:'transparent' }, ticks:{ color:'#a3c5a3' } } } }
     });
 
-    chartInstances.ghg = new Chart(document.getElementById('ghgBar'), {
+    charts.ghg = new Chart(document.getElementById('ghgBar'), {
       type: 'bar',
-      data: {
-        labels: ['CO₂', 'CH₄', 'N₂O'],
-        datasets: [{
-          data: [d.co2, d.methane, d.n2o],
-          backgroundColor: ['rgba(74,222,128,0.75)','rgba(45,212,191,0.75)','rgba(251,191,36,0.65)'],
-          borderColor: ['#4ade80','#2dd4bf','#fbbf24'],
-          borderWidth: 1, borderRadius: 7,
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: { ...tip, callbacks: { label: ctx => ` ${ctx.raw.toFixed(4)} g avoided` } } },
-        scales: {
-          x: { grid: { color: grid }, ticks: { color: '#a3c5a3' } },
-          y: { grid: { color: grid }, ticks: { color: '#4a6a4a' }, title: { display: true, text: 'grams', color: '#4a6a4a' } }
-        }
-      }
+      data: { labels:['CO₂','CH₄','N₂O'], datasets:[{ data:[d.co2,d.methane,d.n2o], backgroundColor:['rgba(74,222,128,0.75)','rgba(45,212,191,0.75)','rgba(251,191,36,0.65)'], borderColor:['#4ade80','#2dd4bf','#fbbf24'], borderWidth:1, borderRadius:7 }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false }, tooltip:{ ...tip, callbacks:{ label: ctx=>` ${ctx.raw.toFixed(4)} g avoided` } } }, scales:{ x:{ grid:{ color:grid }, ticks:{ color:'#a3c5a3' } }, y:{ grid:{ color:grid }, ticks:{ color:'#4a6a4a' }, title:{ display:true, text:'grams', color:'#4a6a4a' } } } }
     });
 
-    chartInstances.other = new Chart(document.getElementById('otherBar'), {
+    charts.other = new Chart(document.getElementById('otherBar'), {
       type: 'bar',
-      data: {
-        labels: ['Leachate', 'NOx', 'PM', 'NH₃'],
-        datasets: [{
-          data: [d.leachate*1000, d.nox*1000, d.pm*1000, d.ammonia*1000],
-          backgroundColor: ['rgba(96,165,250,0.75)','rgba(167,139,250,0.75)','rgba(248,113,113,0.75)','rgba(251,146,60,0.75)'],
-          borderColor: ['#60a5fa','#a78bfa','#f87171','#fb923c'],
-          borderWidth: 1, borderRadius: 7,
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: { ...tip, callbacks: { label: ctx => ` ${ctx.raw.toFixed(4)} mg avoided` } } },
-        scales: {
-          x: { grid: { color: grid }, ticks: { color: '#a3c5a3' } },
-          y: { grid: { color: grid }, ticks: { color: '#4a6a4a' }, title: { display: true, text: 'milligrams', color: '#4a6a4a' } }
-        }
-      }
+      data: { labels:['Leachate','NOx','PM','NH₃'], datasets:[{ data:[d.leachate*1000,d.nox*1000,d.pm*1000,d.ammonia*1000], backgroundColor:['rgba(96,165,250,0.75)','rgba(167,139,250,0.75)','rgba(248,113,113,0.75)','rgba(251,146,60,0.75)'], borderColor:['#60a5fa','#a78bfa','#f87171','#fb923c'], borderWidth:1, borderRadius:7 }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false }, tooltip:{ ...tip, callbacks:{ label: ctx=>` ${ctx.raw.toFixed(4)} mg avoided` } } }, scales:{ x:{ grid:{ color:grid }, ticks:{ color:'#a3c5a3' } }, y:{ grid:{ color:grid }, ticks:{ color:'#4a6a4a' }, title:{ display:true, text:'milligrams', color:'#4a6a4a' } } } }
     });
   }
 
   function buildTable(d) {
     const rows = [
-      { name: 'CO₂',                    cat: 'ghg',   val: d.co2*1000,      disp: `${d.co2} g`,                        color: '#4ade80' },
-      { name: 'Methane (CH₄)',           cat: 'ghg',   val: d.methane*1000,  disp: `${d.methane} g`,                    color: '#2dd4bf' },
-      { name: 'Leachate',                cat: 'other', val: d.leachate*1000, disp: `${(d.leachate*1000).toFixed(2)} mg`, color: '#60a5fa' },
-      { name: 'Nitrous Oxide (N₂O)',     cat: 'ghg',   val: d.n2o*1000,      disp: `${(d.n2o*1000).toFixed(3)} mg`,    color: '#fbbf24' },
-      { name: 'Nitrogen Oxides (NOx)',   cat: 'other', val: d.nox*1000,      disp: `${(d.nox*1000).toFixed(3)} mg`,    color: '#a78bfa' },
-      { name: 'Particulate Matter (PM)', cat: 'other', val: d.pm*1000,       disp: `${(d.pm*1000).toFixed(3)} mg`,     color: '#f87171' },
-      { name: 'Ammonia (NH₃)',           cat: 'other', val: d.ammonia*1000,  disp: `${(d.ammonia*1000).toFixed(4)} mg`, color: '#fb923c' },
+      { name:'CO₂',                    cat:'ghg',   val:d.co2*1000,      disp:`${d.co2} g`,                        color:'#4ade80' },
+      { name:'Methane (CH₄)',           cat:'ghg',   val:d.methane*1000,  disp:`${d.methane} g`,                    color:'#2dd4bf' },
+      { name:'Leachate',                cat:'other', val:d.leachate*1000, disp:`${(d.leachate*1000).toFixed(2)} mg`, color:'#60a5fa' },
+      { name:'Nitrous Oxide (N₂O)',     cat:'ghg',   val:d.n2o*1000,      disp:`${(d.n2o*1000).toFixed(3)} mg`,    color:'#fbbf24' },
+      { name:'Nitrogen Oxides (NOx)',   cat:'other', val:d.nox*1000,      disp:`${(d.nox*1000).toFixed(3)} mg`,    color:'#a78bfa' },
+      { name:'Particulate Matter (PM)', cat:'other', val:d.pm*1000,       disp:`${(d.pm*1000).toFixed(3)} mg`,     color:'#f87171' },
+      { name:'Ammonia (NH₃)',           cat:'other', val:d.ammonia*1000,  disp:`${(d.ammonia*1000).toFixed(4)} mg`, color:'#fb923c' },
     ];
     const maxVal = Math.max(...rows.map(r => r.val));
     const tbody = document.getElementById('tableBody');
     tbody.innerHTML = '';
     rows.forEach(r => {
       const pct = (r.val / maxVal * 100).toFixed(1);
-      tbody.innerHTML += `
-        <tr>
-          <td style="color:var(--text);font-weight:500">${r.name}</td>
-          <td><span class="tag tag-${r.cat}">${r.cat === 'ghg' ? 'greenhouse gas' : 'other emission'}</span></td>
-          <td style="color:${r.color};font-weight:500">${r.disp}</td>
-          <td><div class="inline-bar"><div class="inline-bar-fill" style="width:${pct}%;background:${r.color}"></div></div></td>
-        </tr>`;
+      tbody.innerHTML += `<tr><td style="color:var(--text);font-weight:500">${r.name}</td><td><span class="tag tag-${r.cat}">${r.cat==='ghg'?'greenhouse gas':'other emission'}</span></td><td style="color:${r.color};font-weight:500">${r.disp}</td><td><div class="inline-bar"><div class="inline-bar-fill" style="width:${pct}%;background:${r.color}"></div></div></td></tr>`;
     });
   }
 
@@ -618,47 +270,33 @@
     try {
       const table = await fetchSheetData();
 
-      // DEBUG — log raw table to console
-      console.log('Total rows returned:', table.rows.length);
-      console.log('Row 20 raw:', JSON.stringify(table.rows[19]));
-      console.log('Row 1 raw:', JSON.stringify(table.rows[0]));
+      // Row 0 = headers, Row 1 = totals (Claude tab has just these 2 rows)
+      const totalsRow = table.rows[1];
+      console.log('Using totals row:', JSON.stringify(totalsRow));
 
-      // Pull values by column index directly from totals row (row 20, index 19)
-      // Col 0: Prototyping Date (TOTAL: label — skip)
-      // Col 1: Sourcing (# sources)
-      // Col 2: Type (# roast types)
-      // Col 3: Grams Used
-      // Col 4: CO2 Reduced (g)
-      // Col 5: Methane (CH4) Reduced (g)
-      // Col 6: Leachate Reduced (g)
-      // Col 7: Ammonia Reduced (g)
-      // Col 8: Nitrous Oxide (N2O) (g)
-      // Col 9: Nitrogen Oxides (NOx) (g)
-      // Col 10: Particulate Matter (PM) (g)
-      const totalsRow = table.rows[TOTALS_ROW];
       const col = i => {
         const cell = totalsRow.c[i];
-        return cell && cell.v !== null ? parseFloat(cell.v) || 0 : 0;
+        return (cell && cell.v !== null) ? parseFloat(cell.v) || 0 : 0;
       };
 
       const d = {
-        sources:    col(1),
-        roastTypes: col(2),
-        grounds:    col(3),
-        co2:        col(4),
-        methane:    col(5),
-        leachate:   col(6),
-        ammonia:    col(7),
-        n2o:        col(8),
-        nox:        col(9),
-        pm:         col(10),
+        sources:    col(0),  // Sourcing
+        roastTypes: col(1),  // Type
+        grounds:    col(2),  // Grams Used
+        co2:        col(3),  // CO2 Reduced (g)
+        methane:    col(4),  // Methane (CH4) Reduced (g)
+        leachate:   col(5),  // Leachate Reduced (g)
+        ammonia:    col(6),  // Ammonia Reduced (g)
+        n2o:        col(7),  // Nitrous Oxide (N2O) (g)
+        nox:        col(8),  // Nitrogen Oxides (NOx) (g)
+        pm:         col(9),  // Particulate Matter (PM) (g)
       };
 
-      // Badges
-      document.getElementById('bSources').textContent   = d.sources;
+      console.log('Parsed data:', d);
+
+      document.getElementById('bSources').textContent    = d.sources;
       document.getElementById('bRoastTypes').textContent = d.roastTypes;
 
-      // KPI cards
       const fmtG  = v => v >= 1000 ? `${(v/1000).toFixed(2)}kg` : `${v}g`;
       const fmtMg = v => `${v.toFixed(v < 1 ? 4 : v < 10 ? 2 : 1)}mg`;
 
@@ -672,7 +310,7 @@
       document.getElementById('kvAmmonia').textContent  = fmtMg(d.ammonia * 1000);
 
       document.getElementById('lastUpdated').textContent =
-        `// last fetched: ${new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}`;
+        `// last fetched: ${new Date().toLocaleString('en-US', { dateStyle:'medium', timeStyle:'short' })}`;
 
       buildCharts(d);
       buildTable(d);
@@ -680,15 +318,11 @@
       document.getElementById('loading').style.display = 'none';
       document.getElementById('main').style.display    = 'block';
 
-    } catch (err) {
+    } catch(err) {
       console.error(err);
       document.getElementById('loading').style.display = 'none';
       document.getElementById('error').innerHTML =
-        `⚠ Could not load data from Google Sheets.<br>
-        <span style="color:var(--muted);font-size:11px;">
-          Make sure the sheet is set to "Anyone with the link can view."<br>
-          Error: ${err.message}
-        </span>`;
+        `⚠ Could not load data from Google Sheets.<br><span style="color:var(--muted);font-size:11px;">Error: ${err.message}</span>`;
       document.getElementById('error').style.display = 'block';
     }
   }
