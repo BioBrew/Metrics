@@ -56,7 +56,6 @@
     z-index: 1;
   }
 
-  /* Loading state */
   #loading {
     display: flex;
     flex-direction: column;
@@ -84,7 +83,6 @@
     text-transform: uppercase;
   }
 
-  /* Error state */
   #error {
     display: none;
     text-align: center;
@@ -92,9 +90,9 @@
     font-family: var(--font-mono);
     color: var(--red);
     font-size: 13px;
+    line-height: 2;
   }
 
-  /* Main content — hidden until data loads */
   #main { display: none; }
 
   header { margin-bottom: 40px; animation: fadeUp 0.6s ease both; }
@@ -351,19 +349,13 @@
 <body>
 <div class="wrapper">
 
-  <!-- Loading -->
   <div id="loading">
     <div class="spinner"></div>
     <div class="loading-text">Fetching latest data...</div>
   </div>
 
-  <!-- Error -->
-  <div id="error">
-    ⚠ Could not load data from Google Sheets.<br>
-    <span style="color:var(--muted); font-size:11px; margin-top:8px; display:block;">Make sure the sheet is set to "Anyone with the link can view."</span>
-  </div>
+  <div id="error"></div>
 
-  <!-- Main dashboard — shown after data loads -->
   <div id="main">
 
     <header>
@@ -376,7 +368,7 @@
 
     <div class="badge-row">
       <div class="badge"><span class="dot"></span> Sources: <strong id="bSources">—</strong></div>
-      <div class="badge"><span class="dot"></span> Partnerships: <strong id="bPartnerships">—</strong></div>
+      <div class="badge"><span class="dot"></span> Partnerships: <strong>5</strong></div>
       <div class="badge"><span class="dot"></span> Roast Types: <strong id="bRoastTypes">—</strong></div>
     </div>
 
@@ -426,7 +418,6 @@
       </div>
     </div>
 
-    <!-- Charts row 1 -->
     <div class="section-label">// breakdown by type</div>
     <div class="section-title">Emissions Distribution</div>
     <div class="charts-grid">
@@ -442,7 +433,6 @@
       </div>
     </div>
 
-    <!-- Charts row 2 -->
     <div class="section-label" style="margin-top:4px;">// category comparison</div>
     <div class="section-title">Greenhouse Gases vs. Other Pollutants</div>
     <div class="charts-grid">
@@ -458,7 +448,6 @@
       </div>
     </div>
 
-    <!-- Reference table -->
     <div class="chart-card" style="margin-top:16px;">
       <div class="section-label">// reference</div>
       <div class="chart-title" style="margin-bottom:18px;">All Pollutants — Full Breakdown</div>
@@ -477,38 +466,22 @@
 
     <footer>BioBrew SP26 Environmental Metrics · Live from Google Sheets</footer>
 
-  </div><!-- /#main -->
+  </div>
 </div>
 
 <script>
-  const SHEET_ID = '1Y3QKMSy_ZPxlf5V5vHVuHXuS9IkBHQSpl6warj_dJQY';
-  const SHEET_NAME = 'Claude';
-  // Row indices in the sheet: row 1 = headers (index 0), row 20 = totals (index 19)
-  const HEADER_ROW = 0;
-  const TOTALS_ROW = 19;
+  const SHEET_ID   = '1Y3QKMSy_ZPxlf5V5vHVuHXuS9IkBHQSpl6warj_dJQY';
+  const SHEET_NAME = 'Tracker';
+  const TOTALS_ROW = 19; // row 20, zero-indexed
 
   async function fetchSheetData() {
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
     const res = await fetch(url);
-    if (!res.ok) throw new Error('Network error');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
-    // Google wraps response in a callback — strip it
-    const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);/)[1]);
-    return json.table;
-  }
-
-  function cellVal(row, col) {
-    const cell = row.c[col];
-    if (!cell || cell.v === null || cell.v === undefined) return null;
-    return cell.v;
-  }
-
-  function fmt(val, unit) {
-    if (val === null) return '—';
-    const n = parseFloat(val);
-    if (unit === 'g') return n >= 1000 ? `${(n/1000).toFixed(2)}kg` : `${n}g`;
-    if (unit === 'mg') return `${n.toFixed(n < 1 ? 4 : n < 10 ? 2 : 1)}mg`;
-    return `${n}`;
+    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*?)\);/);
+    if (!match) throw new Error('Could not parse Google Sheets response');
+    return JSON.parse(match[1]).table;
   }
 
   const chartInstances = {};
@@ -528,10 +501,8 @@
       cornerRadius: 8,
     };
 
-    // Destroy old charts if re-rendering
     Object.values(chartInstances).forEach(c => c.destroy());
 
-    // Donut
     chartInstances.donut = new Chart(document.getElementById('donutChart'), {
       type: 'doughnut',
       data: {
@@ -554,7 +525,6 @@
       }
     });
 
-    // Horizontal bar
     chartInstances.hbar = new Chart(document.getElementById('hbarChart'), {
       type: 'bar',
       data: {
@@ -576,7 +546,6 @@
       }
     });
 
-    // GHG bar
     chartInstances.ghg = new Chart(document.getElementById('ghgBar'), {
       type: 'bar',
       data: {
@@ -598,7 +567,6 @@
       }
     });
 
-    // Other pollutants bar
     chartInstances.other = new Chart(document.getElementById('otherBar'), {
       type: 'bar',
       data: {
@@ -623,13 +591,13 @@
 
   function buildTable(d) {
     const rows = [
-      { name: 'CO₂',                    cat: 'ghg',   val: d.co2*1000,      disp: `${d.co2} g`,                          color: '#4ade80' },
-      { name: 'Methane (CH₄)',           cat: 'ghg',   val: d.methane*1000,  disp: `${d.methane} g`,                      color: '#2dd4bf' },
-      { name: 'Leachate',                cat: 'other', val: d.leachate*1000, disp: `${(d.leachate*1000).toFixed(2)} mg`,   color: '#60a5fa' },
-      { name: 'Nitrous Oxide (N₂O)',     cat: 'ghg',   val: d.n2o*1000,      disp: `${(d.n2o*1000).toFixed(3)} mg`,       color: '#fbbf24' },
-      { name: 'Nitrogen Oxides (NOx)',   cat: 'other', val: d.nox*1000,      disp: `${(d.nox*1000).toFixed(3)} mg`,       color: '#a78bfa' },
-      { name: 'Particulate Matter (PM)', cat: 'other', val: d.pm*1000,       disp: `${(d.pm*1000).toFixed(3)} mg`,        color: '#f87171' },
-      { name: 'Ammonia (NH₃)',           cat: 'other', val: d.ammonia*1000,  disp: `${(d.ammonia*1000).toFixed(4)} mg`,   color: '#fb923c' },
+      { name: 'CO₂',                    cat: 'ghg',   val: d.co2*1000,      disp: `${d.co2} g`,                        color: '#4ade80' },
+      { name: 'Methane (CH₄)',           cat: 'ghg',   val: d.methane*1000,  disp: `${d.methane} g`,                    color: '#2dd4bf' },
+      { name: 'Leachate',                cat: 'other', val: d.leachate*1000, disp: `${(d.leachate*1000).toFixed(2)} mg`, color: '#60a5fa' },
+      { name: 'Nitrous Oxide (N₂O)',     cat: 'ghg',   val: d.n2o*1000,      disp: `${(d.n2o*1000).toFixed(3)} mg`,    color: '#fbbf24' },
+      { name: 'Nitrogen Oxides (NOx)',   cat: 'other', val: d.nox*1000,      disp: `${(d.nox*1000).toFixed(3)} mg`,    color: '#a78bfa' },
+      { name: 'Particulate Matter (PM)', cat: 'other', val: d.pm*1000,       disp: `${(d.pm*1000).toFixed(3)} mg`,     color: '#f87171' },
+      { name: 'Ammonia (NH₃)',           cat: 'other', val: d.ammonia*1000,  disp: `${(d.ammonia*1000).toFixed(4)} mg`, color: '#fb923c' },
     ];
     const maxVal = Math.max(...rows.map(r => r.val));
     const tbody = document.getElementById('tableBody');
@@ -649,65 +617,72 @@
   async function init() {
     try {
       const table = await fetchSheetData();
-      const headers = table.rows[HEADER_ROW];
-      const totals  = table.rows[TOTALS_ROW];
 
-      // Map header names to column indices
+      // Build a map of header name → column index from row 1
+      const headerRow = table.rows[0];
       const colMap = {};
-      headers.c.forEach((cell, i) => {
-        if (cell && cell.v) colMap[cell.v.trim()] = i;
+      headerRow.c.forEach((cell, i) => {
+        if (cell && cell.v !== null) colMap[String(cell.v).trim()] = i;
       });
 
-      // Pull values by header name
+      // Helper: get numeric value from totals row by header name
+      const totalsRow = table.rows[TOTALS_ROW];
       const g = key => {
         const idx = colMap[key];
-        return idx !== undefined ? parseFloat(cellVal(totals, idx)) || 0 : 0;
+        if (idx === undefined) return 0;
+        const cell = totalsRow.c[idx];
+        return cell && cell.v !== null ? parseFloat(cell.v) || 0 : 0;
       };
 
       const d = {
-        sources:      g('Sources'),
-        partnerships: g('Partnerships'),
-        roastTypes:   g('Roast Types'),
-        grounds:      g('Grounds Used (g)'),
-        co2:          g('CO2 Reduced (g)'),
-        methane:      g('Methane (CH4) (g)'),
-        leachate:     g('Leachate (g)'),
-        ammonia:      g('Ammonia (g)'),
-        n2o:          g('Nitrous Oxide (N2O) (g)'),
-        nox:          g('Nitrogen Oxides (NOx) (g)'),
-        pm:           g('Particulate Matter (PM) (g)'),
+        sources:   g('Sourcing'),
+        roastTypes:g('Type'),
+        grounds:   g('Grams Used'),
+        co2:       g('CO2 Reduced (g)'),
+        methane:   g('Methane (CH4) Reduced (g)'),
+        leachate:  g('Leachate Reduced (g)'),
+        ammonia:   g('Ammonia Reduced (g)'),
+        n2o:       g('Nitrous Oxide (N2O) (g)'),
+        nox:       g('Nitrogen Oxides (NOx) (g)'),
+        pm:        g('Particulate Matter (PM) (g)'),
       };
 
-      // Populate badges
-      document.getElementById('bSources').textContent      = d.sources;
-      document.getElementById('bPartnerships').textContent = d.partnerships;
-      document.getElementById('bRoastTypes').textContent   = d.roastTypes;
+      // Badges
+      document.getElementById('bSources').textContent   = d.sources;
+      document.getElementById('bRoastTypes').textContent = d.roastTypes;
 
-      // Populate KPI cards
-      document.getElementById('kvGrounds').textContent  = fmt(d.grounds, 'g');
-      document.getElementById('kvCO2').textContent      = fmt(d.co2, 'g');
-      document.getElementById('kvMethane').textContent  = fmt(d.methane, 'g');
-      document.getElementById('kvN2O').textContent      = fmt(d.n2o * 1000, 'mg');
-      document.getElementById('kvLeachate').textContent = fmt(d.leachate * 1000, 'mg');
-      document.getElementById('kvNOx').textContent      = fmt(d.nox * 1000, 'mg');
-      document.getElementById('kvPM').textContent       = fmt(d.pm * 1000, 'mg');
-      document.getElementById('kvAmmonia').textContent  = fmt(d.ammonia * 1000, 'mg');
+      // KPI cards
+      const fmtG  = v => v >= 1000 ? `${(v/1000).toFixed(2)}kg` : `${v}g`;
+      const fmtMg = v => `${v.toFixed(v < 1 ? 4 : v < 10 ? 2 : 1)}mg`;
 
-      // Last updated
+      document.getElementById('kvGrounds').textContent  = fmtG(d.grounds);
+      document.getElementById('kvCO2').textContent      = fmtG(d.co2);
+      document.getElementById('kvMethane').textContent  = fmtG(d.methane);
+      document.getElementById('kvN2O').textContent      = fmtMg(d.n2o * 1000);
+      document.getElementById('kvLeachate').textContent = fmtMg(d.leachate * 1000);
+      document.getElementById('kvNOx').textContent      = fmtMg(d.nox * 1000);
+      document.getElementById('kvPM').textContent       = fmtMg(d.pm * 1000);
+      document.getElementById('kvAmmonia').textContent  = fmtMg(d.ammonia * 1000);
+
       document.getElementById('lastUpdated').textContent =
         `// last fetched: ${new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}`;
 
       buildCharts(d);
       buildTable(d);
 
-      // Show dashboard, hide loader
       document.getElementById('loading').style.display = 'none';
       document.getElementById('main').style.display    = 'block';
 
     } catch (err) {
       console.error(err);
       document.getElementById('loading').style.display = 'none';
-      document.getElementById('error').style.display   = 'block';
+      document.getElementById('error').innerHTML =
+        `⚠ Could not load data from Google Sheets.<br>
+        <span style="color:var(--muted);font-size:11px;">
+          Make sure the sheet is set to "Anyone with the link can view."<br>
+          Error: ${err.message}
+        </span>`;
+      document.getElementById('error').style.display = 'block';
     }
   }
 
