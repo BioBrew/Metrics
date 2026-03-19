@@ -3,462 +3,579 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Environmental Impact Dashboard</title>
+<title>Grounds to Good — Impact Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
+/* ═══════════════════════════════════════════════
+   EASY CUSTOMIZATION — edit these variables to
+   change colors, fonts, and sizing site-wide
+   ═══════════════════════════════════════════════ */
 :root {
-  --bg:     #060d0a;
-  --surf:   #0d1a12;
-  --border: #1a3022;
-  --accent: #3effa0;
-  --a2:     #00d4a0;
-  --a3:     #ffe566;
-  --a4:     #ff7eb3;
-  --a5:     #7eb8ff;
-  --a6:     #ff9f7e;
-  --a7:     #c47eff;
-  --a8:     #7effea;
-  --text:   #cce8d8;
-  --muted:  #4a7060;
-  --danger: #ff6b6b;
+  /* Colors */
+  --bg:         #0f0a06;       /* page background */
+  --surf:       #1a1108;       /* card background */
+  --surf2:      #231a0e;       /* slightly lighter card */
+  --border:     #2e2010;       /* divider lines */
+  --accent:     #c8863c;       /* main orange-brown accent */
+  --accent-glow:#c8863c44;
+  --gold:       #e8c97a;       /* warm gold highlights */
+  --cream:      #f0e6cc;       /* light text */
+  --muted:      #7a6040;       /* secondary text */
+  --green:      #7ec88a;       /* greenhouse gas color */
+  --blue:       #7eb4c8;       /* air pollutant color */
+  --danger:     #c87a7a;
+
+  /* Typography — swap these font names to change fonts */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body:    'DM Sans', system-ui, sans-serif;
+
+  /* Sizing */
+  --radius: 4px;
+  --gap:    1.5rem;
 }
+
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;font-size:13px;min-height:100vh;
-  background-image:radial-gradient(ellipse 70% 50% at 90% 0%,rgba(62,255,160,.05) 0%,transparent 55%),
-  radial-gradient(ellipse 50% 70% at 5% 100%,rgba(0,212,160,.04) 0%,transparent 55%)}
+body{
+  background:var(--bg); color:var(--cream);
+  font-family:var(--font-body); font-size:14px; line-height:1.5;
+  min-height:100vh;
+  background-image:
+    radial-gradient(ellipse 80% 40% at 50% 0%, #2a1a0844 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 0% 100%, #1a0f0533 0%, transparent 50%);
+}
 
-/* HEADER */
-header{padding:2rem 2.5rem 1.5rem;border-bottom:1px solid var(--border);
-  display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-end;justify-content:space-between}
-.brand{display:flex;align-items:center;gap:1rem}
-.leaf{width:44px;height:44px;background:var(--accent);border-radius:60% 40% 60% 40%/50% 50% 50% 50%;
-  display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;
-  box-shadow:0 0 28px rgba(62,255,160,.35);animation:pulse 4s ease-in-out infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 28px rgba(62,255,160,.35)}50%{box-shadow:0 0 48px rgba(62,255,160,.6)}}
-h1{font-family:'Fraunces',serif;font-size:clamp(1.5rem,3vw,2.1rem);font-weight:700;color:#fff;line-height:1.1}
-h1 em{color:var(--accent);font-style:normal}
-.subtitle{color:var(--muted);font-size:11px;margin-top:.3rem;letter-spacing:.08em}
-.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:.5rem}
-#status{font-size:11px;letter-spacing:.12em;padding:.3rem .9rem;border:1px solid var(--border);
-  background:var(--surf);color:var(--muted);border-radius:2px}
-#status.live{border-color:var(--accent);color:var(--accent)}
-#status.error{border-color:var(--danger);color:var(--danger)}
-#updated{color:var(--muted);font-size:10px}
+/* ── HEADER ── */
+header {
+  padding: 3rem 3rem 2rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; flex-wrap: wrap; gap: 1.5rem;
+  align-items: flex-end; justify-content: space-between;
+  position: relative; overflow: hidden;
+}
+header::before {
+  content: '☕';
+  position: absolute; right: 2rem; top: 50%;
+  transform: translateY(-50%);
+  font-size: 9rem; opacity: 0.04; pointer-events: none;
+  line-height: 1;
+}
+.brand-eyebrow {
+  font-family: var(--font-body);
+  font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 0.5rem; font-weight: 500;
+}
+/* ── EDIT SITE TITLE HERE ── */
+h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 900; color: var(--cream); line-height: 1.05;
+}
+h1 em { color: var(--accent); font-style: italic; }
+/* ── EDIT SITE SUBTITLE HERE ── */
+.tagline {
+  color: var(--muted); font-size: 14px; margin-top: 0.5rem;
+  max-width: 440px; font-weight: 300;
+}
+.header-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
+#status {
+  font-size: 11px; letter-spacing: 0.12em; padding: 0.35rem 1rem;
+  border: 1px solid var(--border); background: var(--surf);
+  color: var(--muted); font-family: var(--font-body);
+}
+#status.live  { border-color: var(--accent); color: var(--accent); }
+#status.error { border-color: var(--danger); color: var(--danger); }
+#updated { color: var(--muted); font-size: 11px; }
+.refresh-btn {
+  background: transparent; border: 1px solid var(--border); color: var(--muted);
+  font-family: var(--font-body); font-size: 11px; padding: 0.35rem 0.9rem;
+  cursor: pointer; letter-spacing: 0.1em; transition: all 0.2s;
+}
+.refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-/* TOOLBAR */
-.toolbar{padding:.9rem 2.5rem;border-bottom:1px solid var(--border);
-  display:flex;flex-wrap:wrap;gap:.75rem;align-items:center}
-.toolbar label{color:var(--muted);font-size:10px;letter-spacing:.1em}
-#url-input{flex:1;min-width:240px;max-width:520px;background:var(--surf);border:1px solid var(--border);
-  color:var(--text);font-family:'Space Mono',monospace;font-size:11px;padding:.5rem .75rem;
-  outline:none;transition:border-color .2s}
-#url-input:focus{border-color:var(--accent)}
-.btn{background:transparent;border:1px solid var(--accent);color:var(--accent);
-  font-family:'Space Mono',monospace;font-size:11px;padding:.5rem 1.1rem;
-  cursor:pointer;letter-spacing:.1em;transition:background .15s,color .15s}
-.btn:hover{background:var(--accent);color:var(--bg)}
-.btn.ghost{border-color:var(--border);color:var(--muted)}
-.btn.ghost:hover{border-color:var(--muted);color:var(--text);background:transparent}
+/* ── HERO STATS ── */
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  border-bottom: 1px solid var(--border);
+}
+.hero-kpi {
+  padding: 2rem 2.5rem;
+  border-right: 1px solid var(--border);
+  position: relative; overflow: hidden;
+}
+.hero-kpi:last-child { border-right: none; }
+.hero-kpi::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--c, var(--accent)), transparent);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 1s cubic-bezier(.22,1,.36,1);
+}
+.hero-kpi.in::after { transform: scaleX(1); }
+.kpi-icon { font-size: 1.4rem; margin-bottom: 0.6rem; line-height: 1; }
+.kpi-label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; font-weight: 500; }
+.kpi-value {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 3.5vw, 2.8rem);
+  font-weight: 900; color: var(--c, var(--accent)); line-height: 1;
+}
+.kpi-unit { font-size: 12px; color: var(--muted); margin-top: 0.3rem; }
 
-/* FILTER BAR */
-#filter-bar{padding:.75rem 2.5rem;border-bottom:1px solid var(--border);
-  display:none;flex-wrap:wrap;gap:.5rem;align-items:center}
-#filter-bar label{color:var(--muted);font-size:10px;letter-spacing:.1em;margin-right:.25rem}
-.tag{padding:.25rem .75rem;border:1px solid var(--border);background:var(--surf);color:var(--muted);
-  font-family:'Space Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:.08em;
-  transition:all .15s;border-radius:2px}
-.tag.active{border-color:var(--accent);color:var(--accent);background:rgba(62,255,160,.07)}
-.tag-all{border-color:var(--a3);color:var(--a3)}
-.tag-all.active{background:rgba(255,229,102,.07)}
+/* ── SECTION LABELS ── */
+.section-header {
+  padding: 1.5rem 3rem 0.75rem;
+  display: flex; align-items: baseline; gap: 1rem;
+}
+.section-label {
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted); font-weight: 500;
+}
+.section-rule { flex: 1; height: 1px; background: var(--border); }
+.section-sublabel { font-size: 11px; color: var(--muted); opacity: 0.6; }
 
-/* KPI STRIP */
-#kpi-strip{display:none;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));
-  border-bottom:1px solid var(--border)}
-.kpi{padding:1.4rem 1.6rem;border-right:1px solid var(--border);position:relative;overflow:hidden}
-.kpi:last-child{border-right:none}
-.kpi-bar{position:absolute;bottom:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,var(--c,var(--accent)),transparent);
-  transform:scaleX(0);transform-origin:left;transition:transform .8s cubic-bezier(.22,1,.36,1)}
-.kpi.in .kpi-bar{transform:scaleX(1)}
-.kpi-label{color:var(--muted);font-size:9px;letter-spacing:.13em;text-transform:uppercase;margin-bottom:.5rem}
-.kpi-val{font-family:'Fraunces',serif;font-size:clamp(1.4rem,2.2vw,1.9rem);
-  font-weight:700;color:var(--c,var(--accent));line-height:1}
-.kpi-sub{color:var(--muted);font-size:10px;margin-top:.3rem}
+/* ── CARD GRID ── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  border-bottom: 1px solid var(--border);
+}
+.card {
+  padding: 1.75rem 2.5rem;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.card:nth-child(even) { border-right: none; }
+.card-title {
+  font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 1.25rem;
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.card-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--c, var(--accent));
+  box-shadow: 0 0 8px var(--c, var(--accent));
+  flex-shrink: 0;
+}
+.chart-wrap { position: relative; height: 210px; }
 
-/* CHART GRID */
-#chart-grid{display:none;grid-template-columns:repeat(auto-fit,minmax(360px,1fr))}
-.card{border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:1.5rem 2rem}
-.card:nth-child(even){border-right:none}
-.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem}
-.card-title{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
-  display:flex;align-items:center;gap:.5rem}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--c,var(--accent));
-  box-shadow:0 0 6px var(--c,var(--accent));flex-shrink:0}
-.card-unit{font-size:9px;color:var(--muted);letter-spacing:.1em}
-.chart-wrap{position:relative;height:200px}
+/* ── WIDE CARD (full width) ── */
+.card-wide {
+  padding: 1.75rem 2.5rem;
+  border-bottom: 1px solid var(--border);
+  grid-column: 1 / -1;
+}
 
-/* SOURCING SECTION */
-#sourcing-section{display:none;border-bottom:1px solid var(--border);padding:1.5rem 2.5rem}
-.section-title{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
-  margin-bottom:1.2rem;display:flex;align-items:center;gap:.5rem}
-.section-title::before{content:'';width:6px;height:6px;border-radius:50%;
-  background:var(--accent);box-shadow:0 0 6px var(--accent);display:inline-block}
-.sourcing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem}
-.sourcing-chart-wrap{position:relative;height:220px}
+/* ── GHG vs POLLUTANT SPLIT ── */
+.split-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid var(--border);
+}
+.split-label {
+  padding: 0.75rem 2.5rem;
+  font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.split-label:first-child { border-right: 1px solid var(--border); }
+.split-pill {
+  padding: 0.2rem 0.7rem; border-radius: 2px; font-size: 10px;
+  letter-spacing: 0.1em;
+}
+.pill-green { background: rgba(126,200,138,.15); color: var(--green); border: 1px solid rgba(126,200,138,.3); }
+.pill-blue  { background: rgba(126,180,200,.15); color: var(--blue);  border: 1px solid rgba(126,180,200,.3); }
 
-/* TABLE */
-#table-section{display:none;padding:1.5rem 2.5rem;border-bottom:1px solid var(--border)}
-.table-scroll{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:11px}
-thead tr{border-bottom:2px solid var(--border)}
-th{padding:.5rem .9rem;text-align:left;color:var(--muted);font-size:9px;
-  letter-spacing:.12em;text-transform:uppercase;font-weight:400;white-space:nowrap}
-td{padding:.5rem .9rem;border-bottom:1px solid rgba(62,255,160,.05);white-space:nowrap}
-tr:hover td{background:rgba(62,255,160,.03)}
-td.num{color:var(--accent);font-weight:700;text-align:right}
-td.sourcing-cell{color:var(--a3)}
-td.type-cell{color:var(--a5)}
+/* ── INSIGHT BAR ── */
+.insight-bar {
+  padding: 1rem 3rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surf);
+  font-size: 12px; color: var(--muted);
+  display: flex; flex-wrap: wrap; gap: 2rem;
+}
+.insight-item strong { color: var(--gold); }
 
-/* LOADING */
-.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);
-  border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+/* ── TABLE ── */
+.table-section { padding: 1.75rem 2.5rem; border-bottom: 1px solid var(--border); }
+.table-scroll  { overflow-x: auto; margin-top: 1rem; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+thead tr { border-bottom: 1px solid var(--border); }
+th { padding: 0.5rem 1rem; text-align: left; color: var(--muted); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 400; white-space: nowrap; }
+td { padding: 0.5rem 1rem; border-bottom: 1px solid rgba(200,134,60,.06); white-space: nowrap; }
+tr:hover td { background: rgba(200,134,60,.04); }
+td.hi   { color: var(--accent); font-weight: 500; text-align: right; }
+td.src  { color: var(--gold); }
+td.typ  { color: var(--blue); }
+td.gram { color: var(--cream); font-weight: 500; text-align: right; }
+
+/* ── SPINNER ── */
+.spinner { display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite; }
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* NOTICE */
-#notice{margin:2rem 2.5rem;padding:1.25rem 1.75rem;border:1px solid var(--border);
-  border-left:3px solid var(--a3);background:var(--surf);line-height:1.9;font-size:12px}
-#notice strong{color:var(--a3)}
-#notice code{background:var(--bg);padding:.1em .45em;border:1px solid var(--border);
-  font-size:11px;word-break:break-all}
+/* ── FOOTER ── */
+footer {
+  padding: 1.25rem 3rem;
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;
+  color: var(--muted); font-size: 11px;
+}
 
-/* FOOTER */
-footer{padding:1rem 2.5rem;border-top:1px solid var(--border);
-  display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem;
-  color:var(--muted);font-size:10px;letter-spacing:.08em}
-
-@media(max-width:640px){
-  header,.toolbar,#filter-bar,.kpi,.card,#sourcing-section,#table-section,footer{padding-left:1rem;padding-right:1rem}
-  #chart-grid{grid-template-columns:1fr}
+@media(max-width:700px){
+  header,footer,.section-header,.hero-kpi,.card,.card-wide,.table-section,.split-label,.insight-bar{padding-left:1.25rem;padding-right:1.25rem}
+  .card-grid{grid-template-columns:1fr}
   .card{border-right:none}
+  .split-header{grid-template-columns:1fr}
+  .split-label:first-child{border-right:none;border-bottom:1px solid var(--border)}
+  header::before{display:none}
 }
 </style>
 </head>
 <body>
 
+<!-- ═══ HEADER ═══════════════════════════════════════════════ -->
 <header>
-  <div class="brand">
-    <div class="leaf">🌿</div>
-    <div>
-      <h1>Emissions <em>Impact</em> Dashboard</h1>
-      <div class="subtitle">Gas reductions · Sourcing breakdown · Material analysis</div>
-    </div>
+  <div>
+    <div class="brand-eyebrow">Impact Dashboard</div>
+    <!-- ✏ EDIT: change site title below -->
+    <h1>Grounds to <em>Good</em></h1>
+    <!-- ✏ EDIT: change subtitle below -->
+    <p class="tagline">Tracking every gram of spent coffee grounds we've diverted from landfill — and the emissions avoided as a result.</p>
   </div>
-  <div class="header-right">
+  <div class="header-meta">
     <div id="updated">—</div>
-    <div id="status">AWAITING DATA</div>
+    <div id="status">LOADING</div>
+    <button class="refresh-btn" onclick="loadSheet()">↻ Refresh</button>
   </div>
 </header>
 
-<div class="toolbar">
-  <label>CSV URL</label>
-  <input id="url-input" type="text"
-    value="https://docs.google.com/spreadsheets/d/e/2PACX-1vT0bbWz_hKAsIoPFIvuiSvykcv9UejbanOWtTODSnWjGU7vL1hgGcLXJbhN0-vdjtBpkQR2a5Al_zmz/pub?gid=531438321&single=true&output=csv"/>
-  <button class="btn" onclick="loadSheet()">↻ REFRESH</button>
-  <button class="btn ghost" onclick="loadDemo()">DEMO DATA</button>
-</div>
+<!-- ═══ HERO KPIS ════════════════════════════════════════════ -->
+<div class="hero-stats" id="hero-stats"></div>
 
-<div id="notice">
-  <strong>⚙ Your sheet URL is pre-loaded.</strong> Click <strong>↻ REFRESH</strong> to pull your live data.<br><br>
-  Expects columns: <code>Sourcing</code> · <code>Type</code> · <code>Grams Used</code> · <code>CO2 Reduced (g)</code> · <code>Methane (CH4) Reduced (g)</code> · <code>Leachate Reduced (g)</code> · <code>Ammonia Reduced (g)</code> · <code>Nitrous Oxide (N2O) (g)</code> · <code>Nitrogen Oxides (NOx) (g)</code> · <code>Particulate Matter (PM) (g)</code><br><br>
-  Add rows to your sheet anytime — click <strong>↻ REFRESH</strong> to update.
-</div>
+<!-- ═══ INSIGHT BAR ══════════════════════════════════════════ -->
+<div class="insight-bar" id="insight-bar" style="display:none"></div>
 
-<div id="filter-bar"></div>
-<div id="kpi-strip" style="display:none"></div>
-<div id="sourcing-section" style="display:none">
-  <div class="section-title">Reductions by Sourcing &amp; Material Type</div>
-  <div class="sourcing-grid" id="sourcing-grid"></div>
+<!-- ═══ GROUNDS + SOURCES ════════════════════════════════════ -->
+<div class="section-header">
+  <span class="section-label">Collection</span>
+  <div class="section-rule"></div>
+  <span class="section-sublabel">Where our grounds come from</span>
 </div>
-<div id="chart-grid" style="display:none"></div>
-<div id="table-section" style="display:none">
-  <div class="section-title" style="margin-bottom:1rem">Raw Data</div>
+<div class="card-grid" id="collection-grid"></div>
+
+<!-- ═══ GREENHOUSE GASES ══════════════════════════════════════ -->
+<div class="split-header">
+  <div class="split-label">
+    <span class="split-pill pill-green">GHG</span>
+    Greenhouse Gas Reductions
+  </div>
+  <div class="split-label">
+    <span class="split-pill pill-blue">AQ</span>
+    Air Quality Improvements
+  </div>
+</div>
+<div class="card-grid" id="emissions-grid"></div>
+
+<!-- ═══ DATA TABLE ════════════════════════════════════════════ -->
+<div class="table-section" id="table-section" style="display:none">
+  <div class="section-label" style="display:flex;align-items:center;gap:.6rem">
+    <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent);display:inline-block"></span>
+    All Records
+  </div>
   <div class="table-scroll"><table id="data-table"></table></div>
 </div>
 
 <footer>
-  <span>Environmental Impact Dashboard</span>
+  <!-- ✏ EDIT: change footer text below -->
+  <span>Grounds to Good · Bioplastics from Spent Coffee</span>
   <span id="row-count"></span>
 </footer>
 
 <script>
-const METRICS = [
-  {key:'CO2 Reduced (g)',           label:'CO₂ Reduced',      color:'#3effa0'},
-  {key:'Methane (CH4) Reduced (g)', label:'CH₄ Reduced',      color:'#00d4a0'},
-  {key:'Leachate Reduced (g)',      label:'Leachate Reduced', color:'#ffe566'},
-  {key:'Ammonia Reduced (g)',       label:'Ammonia Reduced',  color:'#ff7eb3'},
-  {key:'Nitrous Oxide (N2O) (g)',   label:'N₂O Reduced',      color:'#7eb8ff'},
-  {key:'Nitrogen Oxides (NOx) (g)', label:'NOₓ Reduced',      color:'#ff9f7e'},
-  {key:'Particulate Matter (PM) (g)',label:'PM Reduced',       color:'#c47eff'},
-];
-const PALETTE = ['#3effa0','#ffe566','#7eb8ff','#ff7eb3','#ff9f7e','#c47eff','#00d4a0','#7effea'];
-const PROXY   = 'https://corsproxy.io/?';
+// ═══════════════════════════════════════════════════════════════
+// YOUR GOOGLE SHEET URL — update this if the URL ever changes
+// ═══════════════════════════════════════════════════════════════
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT0bbWz_hKAsIoPFIvuiSvykcv9UejbanOWtTODSnWjGU7vL1hgGcLXJbhN0-vdjtBpkQR2a5Al_zmz/pub?gid=531438321&single=true&output=csv';
+const PROXY     = 'https://corsproxy.io/?';
 
-let allRows = [], activeFilter = 'ALL';
+// ── Column definitions ─────────────────────────────────────────
+// ✏ If you rename columns in your sheet, update these keys
+const COL_SOURCING = 'Sourcing';
+const COL_TYPE     = 'Type';
+const COL_GRAMS    = 'Grams Used';
+
+const GHG_METRICS = [
+  { key: 'CO2 Reduced (g)',           label: 'CO₂',          full: 'Carbon Dioxide', color: '#7ec88a' },
+  { key: 'Methane (CH4) Reduced (g)', label: 'CH₄',          full: 'Methane',        color: '#a8e6b4' },
+  { key: 'Nitrous Oxide (N2O) (g)',   label: 'N₂O',          full: 'Nitrous Oxide',  color: '#c8e8a0' },
+];
+const AQ_METRICS = [
+  { key: 'Leachate Reduced (g)',       label: 'Leachate',    full: 'Leachate',              color: '#7eb4c8' },
+  { key: 'Ammonia Reduced (g)',        label: 'NH₃',         full: 'Ammonia',               color: '#90c8e0' },
+  { key: 'Nitrogen Oxides (NOx) (g)', label: 'NOₓ',          full: 'Nitrogen Oxides',       color: '#a0d4e8' },
+  { key: 'Particulate Matter (PM) (g)',label: 'PM',          full: 'Particulate Matter',    color: '#b8e0f0' },
+];
+const ALL_METRICS = [...GHG_METRICS, ...AQ_METRICS];
+
+let allRows = [];
 const charts = {};
 
-/* ── CSV ── */
-function parseCSV(text){
+// ── CSV ────────────────────────────────────────────────────────
+function parseCSV(text) {
   const lines = text.trim().split(/\r?\n/);
   const hdrs  = splitLine(lines[0]);
-  return lines.slice(1).map(l=>splitLine(l)).filter(r=>r.some(c=>c))
-    .map(r=>{ const o={}; hdrs.forEach((h,i)=>o[h.trim()]=(r[i]||'').trim()); return o; });
+  return lines.slice(1).map(l => splitLine(l))
+    .filter(r => r.some(c => c))
+    .map(r => { const o={}; hdrs.forEach((h,i) => o[h.trim()] = (r[i]||'').trim()); return o; });
 }
-function splitLine(l){
-  const r=[];let cur='',q=false;
-  for(let i=0;i<l.length;i++){
+function splitLine(l) {
+  const res=[]; let cur='', q=false;
+  for (let i=0;i<l.length;i++) {
     const c=l[i];
     if(c==='"'){q=!q;}
-    else if(c===','&&!q){r.push(cur);cur='';}
+    else if(c===','&&!q){res.push(cur);cur='';}
     else cur+=c;
   }
-  r.push(cur); return r;
+  res.push(cur); return res;
 }
 
-/* ── Fetch ── */
-async function loadSheet(){
-  const url=document.getElementById('url-input').value.trim();
+// ── Fetch ──────────────────────────────────────────────────────
+async function loadSheet() {
   setStatus('loading');
-  try{
-    const bustUrl = url + (url.includes('?') ? '&' : '?') + '_cb=' + Date.now();
-    const res=await fetch(PROXY+encodeURIComponent(bustUrl));
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const text=await res.text();
-    allRows=parseCSV(text);
-    if(!allRows.length) throw new Error('No rows found');
-    render(); setStatus('live');
-  }catch(e){ setStatus('error',e.message); }
+  try {
+    const bust = SHEET_URL + '&_cb=' + Date.now();
+    const res  = await fetch(PROXY + encodeURIComponent(bust));
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    allRows = parseCSV(text);
+    if (!allRows.length) throw new Error('Sheet appears empty');
+    render();
+    setStatus('live');
+  } catch(e) {
+    setStatus('error', e.message);
+  }
 }
 
-/* ── Demo ── */
-function loadDemo(){
-  const srcs=['Recycled','Composted','Reused','Upcycled'];
-  const typs=['Plastic','Paper','Organic','Metal','Glass','Textile'];
-  allRows=Array.from({length:36},(_,i)=>{
-    const s=srcs[i%srcs.length], t=typs[i%typs.length];
-    const g=Math.round(80+Math.random()*920);
-    return{
-      'Sourcing':s,'Type':t,'Grams Used':g,
-      'CO2 Reduced (g)':          +(g*(.8+Math.random()*.4)).toFixed(2),
-      'Methane (CH4) Reduced (g)':+(g*(.05+Math.random()*.1)).toFixed(2),
-      'Leachate Reduced (g)':     +(g*(.2+Math.random()*.3)).toFixed(2),
-      'Ammonia Reduced (g)':      +(g*(.01+Math.random()*.05)).toFixed(2),
-      'Nitrous Oxide (N2O) (g)':  +(g*(.02+Math.random()*.04)).toFixed(2),
-      'Nitrogen Oxides (NOx) (g)':+(g*(.015+Math.random()*.03)).toFixed(2),
-      'Particulate Matter (PM) (g)':+(g*(.005+Math.random()*.01)).toFixed(2),
-    };
-  });
-  render(); setStatus('live',null,true);
+function setStatus(s, msg, demo) {
+  const el = document.getElementById('status');
+  const up = document.getElementById('updated');
+  el.className = '';
+  if (s === 'loading') { el.innerHTML = '<span class="spinner"></span>'; return; }
+  if (s === 'live') {
+    el.className = 'live';
+    el.textContent = demo ? '● DEMO' : '● LIVE';
+    up.textContent = 'Updated ' + new Date().toLocaleTimeString();
+  } else {
+    el.className = 'error';
+    el.textContent = '✕ ' + (msg || 'ERROR');
+  }
 }
 
-/* ── Status ── */
-function setStatus(s,msg,demo){
-  const el=document.getElementById('status');
-  const up=document.getElementById('updated');
-  el.className='';
-  if(s==='loading') el.innerHTML='<span class="spinner"></span>';
-  else if(s==='live'){el.className='live';el.textContent=demo?'● DEMO':'● LIVE';up.textContent='Fetched: '+new Date().toLocaleString();}
-  else{el.className='error';el.textContent='✕ '+(msg||'ERROR');up.textContent='';}
+// ── Number helpers ─────────────────────────────────────────────
+function fmt(n) {
+  if (n == null || isNaN(n)) return '—';
+  if (Math.abs(n) >= 1e6) return (n/1e6).toFixed(2) + 'M';
+  if (Math.abs(n) >= 1e3) return (n/1e3).toFixed(1) + 'K';
+  return parseFloat(n.toFixed(1)).toLocaleString();
 }
+function sum(arr, key) { return arr.reduce((s,r) => s + (parseFloat(r[key]) || 0), 0); }
+function uniq(arr, key) { return [...new Set(arr.map(r => r[key]).filter(Boolean))]; }
 
-/* ── Filtered rows ── */
-function rows(){ return activeFilter==='ALL'?allRows:allRows.filter(r=>r['Sourcing']===activeFilter); }
-
-/* ── Master render ── */
-function render(){
-  document.getElementById('notice').style.display='none';
-  buildFilters();
-  renderKPIs();
-  renderSourcingCharts();
-  renderMetricCharts();
+// ── Master render ──────────────────────────────────────────────
+function render() {
+  renderHero();
+  renderInsightBar();
+  renderCollection();
+  renderEmissions();
   renderTable();
-  document.getElementById('row-count').textContent=allRows.length+' rows loaded';
+  document.getElementById('row-count').textContent = allRows.length + ' records';
 }
 
-/* ── Filters ── */
-function buildFilters(){
-  const bar=document.getElementById('filter-bar');
-  const srcs=[...new Set(allRows.map(r=>r['Sourcing']).filter(Boolean))];
-  bar.innerHTML='<label>FILTER BY SOURCING:</label>';
-  const all=document.createElement('span');
-  all.className='tag tag-all active';all.textContent='ALL';
-  all.onclick=()=>setFilter('ALL'); bar.appendChild(all);
-  srcs.forEach(s=>{
-    const t=document.createElement('span');
-    t.className='tag';t.textContent=s;
-    t.onclick=()=>setFilter(s); bar.appendChild(t);
-  });
-  bar.style.display='flex';
-}
-function setFilter(v){
-  activeFilter=v;
-  document.querySelectorAll('.tag').forEach(t=>
-    t.classList.toggle('active',(v==='ALL'&&t.classList.contains('tag-all'))||(t.textContent===v)));
-  renderKPIs(); renderSourcingCharts(); renderMetricCharts(); renderTable();
-}
+// ── Hero KPIs ──────────────────────────────────────────────────
+function renderHero() {
+  const container = document.getElementById('hero-stats');
+  container.innerHTML = '';
+  const totalGrams    = sum(allRows, COL_GRAMS);
+  const totalCO2      = sum(allRows, 'CO2 Reduced (g)');
+  const totalCH4      = sum(allRows, 'Methane (CH4) Reduced (g)');
+  const totalN2O      = sum(allRows, 'Nitrous Oxide (N2O) (g)');
+  const totalGHG      = totalCO2 + totalCH4 + totalN2O;
+  const sources       = uniq(allRows, COL_SOURCING).length;
+  const roastTypes    = uniq(allRows, COL_TYPE).length;
 
-/* ── KPIs ── */
-function renderKPIs(){
-  const r=rows(), strip=document.getElementById('kpi-strip');
-  strip.innerHTML=''; strip.style.display='grid';
-  const totalG=r.reduce((s,x)=>s+(parseFloat(x['Grams Used'])||0),0);
-  addKPI(strip,'Total Grams Used',fmt(totalG),'g','#ffe566');
-  METRICS.forEach(m=>{
-    const tot=r.reduce((s,x)=>s+(parseFloat(x[m.key])||0),0);
-    addKPI(strip,m.label,fmt(tot),'g reduced',m.color);
-  });
-}
-function addKPI(p,label,val,sub,color){
-  const d=document.createElement('div');
-  d.className='kpi'; d.style.setProperty('--c',color);
-  d.innerHTML=`<div class="kpi-label">${label}</div><div class="kpi-val">${val}</div><div class="kpi-sub">${sub}</div><div class="kpi-bar"></div>`;
-  p.appendChild(d);
-  requestAnimationFrame(()=>requestAnimationFrame(()=>d.classList.add('in')));
-}
+  const kpis = [
+    { icon:'☕', label:'Coffee Grounds Diverted', value: fmt(totalGrams), unit:'grams from landfill', color:'var(--accent)' },
+    { icon:'🌿', label:'Total GHG Avoided',       value: fmt(totalGHG),   unit:'grams CO₂-equiv.',   color:'var(--green)' },
+    { icon:'🏪', label:'Partner Coffee Shops',    value: sources,         unit:'unique sources',      color:'var(--gold)' },
+    { icon:'🫘', label:'Roast Types Used',         value: roastTypes,     unit:'different roasts',    color:'var(--blue)' },
+  ];
 
-/* ── Sourcing overview charts ── */
-function renderSourcingCharts(){
-  const r=rows();
-  const section=document.getElementById('sourcing-section');
-  const grid=document.getElementById('sourcing-grid');
-  grid.innerHTML=''; section.style.display='';
-  const srcs=[...new Set(r.map(x=>x['Sourcing']).filter(Boolean))];
-  const typs=[...new Set(r.map(x=>x['Type']).filter(Boolean))];
-
-  // 1 — CO2 by sourcing (horizontal bar)
-  addSrcChart(grid,'sc1','CO₂ Reduced by Sourcing','#3effa0',
-    srcs,
-    [{label:'CO₂ (g)',
-      data:srcs.map(s=>r.filter(x=>x['Sourcing']===s).reduce((a,x)=>a+(parseFloat(x['CO2 Reduced (g)'])||0),0)),
-      backgroundColor:srcs.map((_,i)=>PALETTE[i%PALETTE.length]+'cc'),
-      borderColor:srcs.map((_,i)=>PALETTE[i%PALETTE.length]),borderWidth:1}],
-    {indexAxis:'y'});
-
-  // 2 — All gases stacked by type
-  addSrcChart(grid,'sc2','All Emissions Reduced by Material Type','#ffe566',
-    typs,
-    METRICS.map((m,i)=>({
-      label:m.label,
-      data:typs.map(t=>r.filter(x=>x['Type']===t).reduce((a,x)=>a+(parseFloat(x[m.key])||0),0)),
-      backgroundColor:m.color+'bb',borderColor:m.color,borderWidth:1
-    })),
-    {stacked:true});
-
-  // 3 — Doughnut grams by type
-  addSrcChart(grid,'sc3','Grams Used by Material Type','#7eb8ff',
-    typs,
-    [{data:typs.map(t=>r.filter(x=>x['Type']===t).reduce((a,x)=>a+(parseFloat(x['Grams Used'])||0),0)),
-      backgroundColor:typs.map((_,i)=>PALETTE[i%PALETTE.length]+'cc'),
-      borderColor:typs.map((_,i)=>PALETTE[i%PALETTE.length]),borderWidth:1}],
-    {isDoughnut:true});
-
-  // 4 — Doughnut grams by sourcing
-  addSrcChart(grid,'sc4','Grams Used by Sourcing','#ff7eb3',
-    srcs,
-    [{data:srcs.map(s=>r.filter(x=>x['Sourcing']===s).reduce((a,x)=>a+(parseFloat(x['Grams Used'])||0),0)),
-      backgroundColor:srcs.map((_,i)=>PALETTE[i%PALETTE.length]+'cc'),
-      borderColor:srcs.map((_,i)=>PALETTE[i%PALETTE.length]),borderWidth:1}],
-    {isDoughnut:true});
-}
-function addSrcChart(grid,id,title,color,labels,datasets,opts){
-  const w=document.createElement('div');
-  w.innerHTML=`<div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem;display:flex;gap:.5rem;align-items:center"><span class="dot" style="--c:${color}"></span>${title}</div><div class="sourcing-chart-wrap"><canvas id="${id}"></canvas></div>`;
-  grid.appendChild(w);
-  mkChart(id, opts.isDoughnut?'doughnut':'bar', labels, datasets, opts);
-}
-
-/* ── Per-metric bar charts ── */
-function renderMetricCharts(){
-  const r=rows();
-  const grid=document.getElementById('chart-grid');
-  grid.innerHTML=''; grid.style.display='grid';
-  const srcs=[...new Set(r.map(x=>x['Sourcing']).filter(Boolean))];
-  METRICS.forEach((m,ci)=>{
-    const card=document.createElement('div');
-    card.className='card';
-    const cid='mc'+ci;
-    card.innerHTML=`<div class="card-head"><div class="card-title" style="--c:${m.color}"><span class="dot" style="--c:${m.color}"></span>${m.label}</div><div class="card-unit">grams reduced</div></div><div class="chart-wrap"><canvas id="${cid}"></canvas></div>`;
-    grid.appendChild(card);
-    const data=srcs.map(s=>r.filter(x=>x['Sourcing']===s).reduce((a,x)=>a+(parseFloat(x[m.key])||0),0));
-    mkChart(cid,'bar',srcs,
-      [{label:m.label,data,
-        backgroundColor:srcs.map((_,i)=>PALETTE[i%PALETTE.length]+'bb'),
-        borderColor:srcs.map((_,i)=>PALETTE[i%PALETTE.length]),borderWidth:1}],{});
+  kpis.forEach(k => {
+    const d = document.createElement('div');
+    d.className = 'hero-kpi';
+    d.style.setProperty('--c', k.color);
+    d.innerHTML = `<div class="kpi-icon">${k.icon}</div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value}</div>
+      <div class="kpi-unit">${k.unit}</div>`;
+    container.appendChild(d);
+    requestAnimationFrame(() => requestAnimationFrame(() => d.classList.add('in')));
   });
 }
 
-/* ── Chart factory ── */
-function mkChart(id,type,labels,datasets,opts={}){
-  if(charts[id]) charts[id].destroy();
-  const ctx=document.getElementById(id); if(!ctx)return;
-  charts[id]=new Chart(ctx,{type,
-    data:{labels,datasets},
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      indexAxis:opts.indexAxis||'x',
-      plugins:{
-        legend:{
-          display:datasets.length>1||type==='doughnut',
-          labels:{color:'#4a7060',font:{family:"'Space Mono',monospace",size:10},boxWidth:10,padding:12}
+// ── Insight bar ────────────────────────────────────────────────
+function renderInsightBar() {
+  const bar = document.getElementById('insight-bar');
+  const totalGrams = sum(allRows, COL_GRAMS);
+  const totalCO2   = sum(allRows, 'CO2 Reduced (g)');
+  const perGram    = totalGrams > 0 ? (totalCO2 / totalGrams).toFixed(3) : '—';
+  const sources    = uniq(allRows, COL_SOURCING);
+  const topSrc     = sources.map(s => ({
+    name: s,
+    g: sum(allRows.filter(r => r[COL_SOURCING] === s), COL_GRAMS)
+  })).sort((a,b) => b.g - a.g)[0];
+
+  bar.innerHTML = `
+    <span>Each gram of grounds avoids <strong>${perGram}g CO₂</strong></span>
+    ${topSrc ? `<span>Top source: <strong>${topSrc.name}</strong> (${fmt(topSrc.g)}g contributed)</span>` : ''}
+    <span>Records tracked: <strong>${allRows.length}</strong></span>
+  `;
+  bar.style.display = 'flex';
+}
+
+// ── Collection charts (sourcing + roast type) ──────────────────
+function renderCollection() {
+  const grid = document.getElementById('collection-grid');
+  grid.innerHTML = '';
+
+  const sources = uniq(allRows, COL_SOURCING);
+  const types   = uniq(allRows, COL_TYPE);
+  const warmPalette = ['#c8863c','#e8c97a','#a06828','#d4a860','#7a5030','#e0b870','#904820','#c8a050'];
+
+  // Chart 1: grams by sourcing (horizontal bar)
+  addCard(grid, 'col1', 'Grams Collected by Source', 'var(--accent)', () => {
+    const data = sources.map(s => sum(allRows.filter(r => r[COL_SOURCING]===s), COL_GRAMS));
+    mkChart('col1','bar', sources,
+      [{ label:'Grams', data, backgroundColor: sources.map((_,i)=>warmPalette[i%warmPalette.length]+'cc'), borderColor: sources.map((_,i)=>warmPalette[i%warmPalette.length]), borderWidth:1 }],
+      { indexAxis:'y' });
+  });
+
+  // Chart 2: grams by roast type (doughnut)
+  addCard(grid, 'col2', 'Grounds by Roast Type', 'var(--gold)', () => {
+    const data = types.map(t => sum(allRows.filter(r => r[COL_TYPE]===t), COL_GRAMS));
+    mkChart('col2','doughnut', types,
+      [{ data, backgroundColor: types.map((_,i)=>warmPalette[i%warmPalette.length]+'cc'), borderColor: types.map((_,i)=>warmPalette[i%warmPalette.length]), borderWidth:2 }],
+      { isDoughnut:true });
+  });
+
+  // Chart 3: CO2 avoided by source
+  addCard(grid, 'col3', 'CO₂ Avoided by Source', 'var(--green)', () => {
+    const data = sources.map(s => sum(allRows.filter(r => r[COL_SOURCING]===s), 'CO2 Reduced (g)'));
+    mkChart('col3','bar', sources,
+      [{ label:'CO₂ (g)', data, backgroundColor: '#7ec88a66', borderColor:'#7ec88a', borderWidth:1 }],
+      { indexAxis:'y' });
+  });
+
+  // Chart 4: all GHGs by source (stacked)
+  addCard(grid, 'col4', 'All GHG Reductions by Source', 'var(--blue)', () => {
+    mkChart('col4','bar', sources,
+      GHG_METRICS.map(m => ({
+        label: m.label,
+        data: sources.map(s => sum(allRows.filter(r=>r[COL_SOURCING]===s), m.key)),
+        backgroundColor: m.color+'99', borderColor: m.color, borderWidth:1
+      })),
+      { stacked:true });
+  });
+}
+
+// ── Emissions charts ───────────────────────────────────────────
+function renderEmissions() {
+  const grid = document.getElementById('emissions-grid');
+  grid.innerHTML = '';
+  const sources = uniq(allRows, COL_SOURCING);
+  const types   = uniq(allRows, COL_TYPE);
+
+  // GHG side — 3 gases
+  GHG_METRICS.forEach((m, i) => {
+    addCard(grid, 'ghg'+i, m.full + ' Reduced', m.color, () => {
+      const data = types.map(t => sum(allRows.filter(r=>r[COL_TYPE]===t), m.key));
+      mkChart('ghg'+i, 'bar', types,
+        [{ label: m.label+' (g)', data, backgroundColor: m.color+'88', borderColor:m.color, borderWidth:1 }], {});
+    });
+  });
+
+  // AQ side — 4 pollutants
+  AQ_METRICS.forEach((m, i) => {
+    addCard(grid, 'aq'+i, m.full + ' Reduced', m.color, () => {
+      const data = types.map(t => sum(allRows.filter(r=>r[COL_TYPE]===t), m.key));
+      mkChart('aq'+i, 'bar', types,
+        [{ label: m.label+' (g)', data, backgroundColor: m.color+'88', borderColor:m.color, borderWidth:1 }], {});
+    });
+  });
+}
+
+// ── Card builder ───────────────────────────────────────────────
+function addCard(grid, id, title, color, chartFn) {
+  const c = document.createElement('div');
+  c.className = 'card';
+  c.innerHTML = `<div class="card-title"><span class="card-dot" style="--c:${color}"></span>${title}</div><div class="chart-wrap"><canvas id="${id}"></canvas></div>`;
+  grid.appendChild(c);
+  requestAnimationFrame(chartFn);
+}
+
+// ── Chart factory ──────────────────────────────────────────────
+function mkChart(id, type, labels, datasets, opts={}) {
+  if (charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  charts[id] = new Chart(ctx, {
+    type,
+    data: { labels, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      indexAxis: opts.indexAxis || 'x',
+      plugins: {
+        legend: {
+          display: datasets.length > 1 || type === 'doughnut',
+          labels: { color:'#7a6040', font:{ family:"'DM Sans',sans-serif", size:11 }, boxWidth:10, padding:14 }
         },
-        tooltip:{
-          backgroundColor:'#0d1a12',borderColor:'#1a3022',borderWidth:1,
-          titleColor:'#cce8d8',bodyColor:'#cce8d8',padding:10,
-          titleFont:{family:"'Space Mono',monospace",size:10},
-          bodyFont:{family:"'Space Mono',monospace",size:11},
-          callbacks:{label:c=>' '+fmt(c.parsed?.y??c.parsed??c.raw)+' g'}
+        tooltip: {
+          backgroundColor:'#1a1108', borderColor:'#2e2010', borderWidth:1,
+          titleColor:'#f0e6cc', bodyColor:'#c8863c', padding:12,
+          titleFont:{ family:"'DM Sans',sans-serif", size:11 },
+          bodyFont:{ family:"'DM Sans',sans-serif", size:12, weight:'500' },
+          callbacks:{ label: c => '  ' + fmt(c.parsed?.y ?? c.parsed ?? c.raw) + ' g' }
         }
       },
-      scales:opts.isDoughnut?{}:{
-        x:{stacked:opts.stacked||false,grid:{color:'rgba(62,255,160,.05)'},
-          ticks:{color:'#4a7060',font:{family:"'Space Mono',monospace",size:10},maxRotation:35}},
-        y:{stacked:opts.stacked||false,grid:{color:'rgba(62,255,160,.05)'},
-          ticks:{color:'#4a7060',font:{family:"'Space Mono',monospace",size:10},callback:v=>fmt(v)}}
+      scales: opts.isDoughnut ? {} : {
+        x: { stacked: opts.stacked||false, grid:{ color:'rgba(200,134,60,.07)' }, ticks:{ color:'#7a6040', font:{ family:"'DM Sans',sans-serif", size:11 }, maxRotation:35 } },
+        y: { stacked: opts.stacked||false, grid:{ color:'rgba(200,134,60,.07)' }, ticks:{ color:'#7a6040', font:{ family:"'DM Sans',sans-serif", size:11 }, callback: v => fmt(v) } }
       }
     }
   });
 }
 
-/* ── Table ── */
-function renderTable(){
-  const r=rows();
-  document.getElementById('table-section').style.display='';
-  const hdrs=['Sourcing','Type','Grams Used',...METRICS.map(m=>m.label)];
-  document.getElementById('data-table').innerHTML=`
+// ── Table ──────────────────────────────────────────────────────
+function renderTable() {
+  document.getElementById('table-section').style.display = '';
+  const cols = [COL_SOURCING, COL_TYPE, COL_GRAMS, ...ALL_METRICS.map(m=>m.key)];
+  const hdrs = [COL_SOURCING, COL_TYPE, 'Grams Used', ...ALL_METRICS.map(m=>m.label)];
+  document.getElementById('data-table').innerHTML = `
     <thead><tr>${hdrs.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
-    <tbody>${r.map(x=>`<tr>
-      <td class="sourcing-cell">${x['Sourcing']||'—'}</td>
-      <td class="type-cell">${x['Type']||'—'}</td>
-      <td class="num">${fmt(parseFloat(x['Grams Used']))}</td>
-      ${METRICS.map(m=>`<td class="num">${fmt(parseFloat(x[m.key]))}</td>`).join('')}
+    <tbody>${allRows.map(r=>`<tr>
+      <td class="src">${r[COL_SOURCING]||'—'}</td>
+      <td class="typ">${r[COL_TYPE]||'—'}</td>
+      <td class="gram">${fmt(parseFloat(r[COL_GRAMS]))}</td>
+      ${ALL_METRICS.map(m=>`<td class="hi">${fmt(parseFloat(r[m.key]))}</td>`).join('')}
     </tr>`).join('')}</tbody>`;
 }
 
-/* ── Formatter ── */
-function fmt(n){
-  if(n==null||isNaN(n))return'—';
-  if(Math.abs(n)>=1e6)return(n/1e6).toFixed(2)+'M';
-  if(Math.abs(n)>=1e3)return(n/1e3).toFixed(2)+'K';
-  return parseFloat(n.toFixed(2)).toLocaleString();
-}
-
+// ── Auto-refresh ───────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', function() {
   loadSheet();
   var cd = 60;
   setInterval(function() {
     cd--;
     var u = document.getElementById('updated');
-    if (u && allRows.length) u.textContent = 'Auto-refresh in ' + cd + 's';
+    if (u && allRows.length) u.textContent = 'Refresh in ' + cd + 's';
     if (cd <= 0) { cd = 60; loadSheet(); }
   }, 1000);
 });
