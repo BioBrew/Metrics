@@ -230,7 +230,8 @@ async function loadSheet(){
   const url=document.getElementById('url-input').value.trim();
   setStatus('loading');
   try{
-    const res=await fetch(PROXY+encodeURIComponent(url));
+    const bustUrl = url + (url.includes('?') ? '&' : '?') + '_cb=' + Date.now();
+    const res=await fetch(PROXY+encodeURIComponent(bustUrl));
     if(!res.ok) throw new Error('HTTP '+res.status);
     const text=await res.text();
     allRows=parseCSV(text);
@@ -451,7 +452,16 @@ function fmt(n){
   return parseFloat(n.toFixed(2)).toLocaleString();
 }
 
-window.addEventListener('DOMContentLoaded',loadSheet);
+window.addEventListener('DOMContentLoaded', function() {
+  loadSheet();
+  var cd = 60;
+  setInterval(function() {
+    cd--;
+    var u = document.getElementById('updated');
+    if (u && allRows.length) u.textContent = 'Auto-refresh in ' + cd + 's';
+    if (cd <= 0) { cd = 60; loadSheet(); }
+  }, 1000);
+});
 </script>
 </body>
 </html>
