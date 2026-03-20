@@ -255,24 +255,14 @@ footer {
 
 <!-- ═══ GROUNDS + SOURCES ════════════════════════════════════ -->
 <div class="section-header">
-  <span class="section-label">Collection</span>
+  <span class="section-label">Impact</span>
   <div class="section-rule"></div>
-  <span class="section-sublabel">Where our grounds come from</span>
+  <span class="section-sublabel">Emissions avoided by repurposing spent coffee grounds</span>
 </div>
 <div class="card-grid" id="collection-grid"></div>
 
-<!-- ═══ GREENHOUSE GASES ══════════════════════════════════════ -->
-<div class="split-header">
-  <div class="split-label">
-    <span class="split-pill pill-green">GHG</span>
-    Greenhouse Gas Reductions
-  </div>
-  <div class="split-label">
-    <span class="split-pill pill-blue">AQ</span>
-    Air Quality Improvements
-  </div>
-</div>
-<div class="card-grid" id="emissions-grid"></div>
+<!-- emissions-grid kept for JS compatibility, hidden -->
+<div id="emissions-grid" style="display:none"></div>
 
 <!-- ═══ DATA TABLE ════════════════════════════════════════════ -->
 <div class="table-section" id="table-section" style="display:none">
@@ -398,8 +388,8 @@ function renderHero() {
   const totalCH4      = sum(allRows, 'Methane (CH4) Reduced (g)');
   const totalN2O      = sum(allRows, 'Nitrous Oxide (N2O) (g)');
   const totalGHG      = totalCO2 + totalCH4 + totalN2O;
-  const sources       = uniq(allRows, COL_SOURCING).length;
-  const roastTypes    = uniq(allRows, COL_TYPE).length;
+  const sources    = parseFloat(allRows[0][COL_SOURCING]) || '—';
+  const roastTypes = parseFloat(allRows[0][COL_TYPE])     || '—';
 
   const kpis = [
     { icon:'☕', label:'Coffee Grounds Diverted', value: fmt(totalGrams), unit:'grams from landfill', color:'var(--accent)' },
@@ -427,89 +417,74 @@ function renderInsightBar() {
   const totalGrams = sum(allRows, COL_GRAMS);
   const totalCO2   = sum(allRows, 'CO2 Reduced (g)');
   const perGram    = totalGrams > 0 ? (totalCO2 / totalGrams).toFixed(3) : '—';
-  const sources    = uniq(allRows, COL_SOURCING);
-  const topSrc     = sources.map(s => ({
-    name: s,
-    g: sum(allRows.filter(r => r[COL_SOURCING] === s), COL_GRAMS)
-  })).sort((a,b) => b.g - a.g)[0];
+  const numSources = parseFloat(allRows[0][COL_SOURCING]) || '?';
+  const numTypes   = parseFloat(allRows[0][COL_TYPE])     || '?';
 
   bar.innerHTML = `
     <span>Each gram of grounds avoids <strong>${perGram}g CO₂</strong></span>
-    ${topSrc ? `<span>Top source: <strong>${topSrc.name}</strong> (${fmt(topSrc.g)}g contributed)</span>` : ''}
-    <span>Records tracked: <strong>${allRows.length}</strong></span>
+    <span>Sourcing from <strong>${numSources} partner shops</strong></span>
+    <span>Across <strong>${numTypes} roast types</strong></span>
   `;
   bar.style.display = 'flex';
 }
 
-// ── Collection charts (sourcing + roast type) ──────────────────
+// ── Collection + Emissions charts ────────────────────────────
 function renderCollection() {
   const grid = document.getElementById('collection-grid');
   grid.innerHTML = '';
+  const row   = allRows[0];
+  const grams = parseFloat(row[COL_GRAMS]) || 0;
 
-  const sources = uniq(allRows, COL_SOURCING);
-  const types   = uniq(allRows, COL_TYPE);
-  const warmPalette = ['#c8863c','#e8c97a','#a06828','#d4a860','#7a5030','#e0b870','#904820','#c8a050'];
-
-  // Chart 1: grams by sourcing (horizontal bar)
-  addCard(grid, 'col1', 'Grams Collected by Source', 'var(--accent)', () => {
-    const data = sources.map(s => sum(allRows.filter(r => r[COL_SOURCING]===s), COL_GRAMS));
-    mkChart('col1','bar', sources,
-      [{ label:'Grams', data, backgroundColor: sources.map((_,i)=>warmPalette[i%warmPalette.length]+'cc'), borderColor: sources.map((_,i)=>warmPalette[i%warmPalette.length]), borderWidth:1 }],
-      { indexAxis:'y' });
+  // Chart 1: All GHGs — bar comparing the 3 gases
+  addCard(grid, 'col1', 'Greenhouse Gas Reductions (g)', 'var(--green)', () => {
+    mkChart('col1', 'bar',
+      GHG_METRICS.map(m => m.full),
+      [{ label:'Grams Reduced',
+         data: GHG_METRICS.map(m => parseFloat(row[m.key]) || 0),
+         backgroundColor: GHG_METRICS.map(m => m.color + '99'),
+         borderColor:     GHG_METRICS.map(m => m.color),
+         borderWidth: 1 }], {});
   });
 
-  // Chart 2: grams by roast type (doughnut)
-  addCard(grid, 'col2', 'Grounds by Roast Type', 'var(--gold)', () => {
-    const data = types.map(t => sum(allRows.filter(r => r[COL_TYPE]===t), COL_GRAMS));
-    mkChart('col2','doughnut', types,
-      [{ data, backgroundColor: types.map((_,i)=>warmPalette[i%warmPalette.length]+'cc'), borderColor: types.map((_,i)=>warmPalette[i%warmPalette.length]), borderWidth:2 }],
-      { isDoughnut:true });
+  // Chart 2: All air pollutants — bar comparing the 4
+  addCard(grid, 'col2', 'Air Quality Improvements (g)', 'var(--blue)', () => {
+    mkChart('col2', 'bar',
+      AQ_METRICS.map(m => m.full),
+      [{ label:'Grams Reduced',
+         data: AQ_METRICS.map(m => parseFloat(row[m.key]) || 0),
+         backgroundColor: AQ_METRICS.map(m => m.color + '99'),
+         borderColor:     AQ_METRICS.map(m => m.color),
+         borderWidth: 1 }], {});
   });
 
-  // Chart 3: CO2 avoided by source
-  addCard(grid, 'col3', 'CO₂ Avoided by Source', 'var(--green)', () => {
-    const data = sources.map(s => sum(allRows.filter(r => r[COL_SOURCING]===s), 'CO2 Reduced (g)'));
-    mkChart('col3','bar', sources,
-      [{ label:'CO₂ (g)', data, backgroundColor: '#7ec88a66', borderColor:'#7ec88a', borderWidth:1 }],
-      { indexAxis:'y' });
+  // Chart 3: Doughnut — proportional share of every emission avoided
+  addCard(grid, 'col3', 'Share of Total Emissions Avoided', 'var(--accent)', () => {
+    mkChart('col3', 'doughnut',
+      ALL_METRICS.map(m => m.label),
+      [{ data: ALL_METRICS.map(m => parseFloat(row[m.key]) || 0),
+         backgroundColor: ALL_METRICS.map(m => m.color + 'cc'),
+         borderColor:     ALL_METRICS.map(m => m.color),
+         borderWidth: 2 }],
+      { isDoughnut: true });
   });
 
-  // Chart 4: all GHGs by source (stacked)
-  addCard(grid, 'col4', 'All GHG Reductions by Source', 'var(--blue)', () => {
-    mkChart('col4','bar', sources,
-      GHG_METRICS.map(m => ({
-        label: m.label,
-        data: sources.map(s => sum(allRows.filter(r=>r[COL_SOURCING]===s), m.key)),
-        backgroundColor: m.color+'99', borderColor: m.color, borderWidth:1
-      })),
-      { stacked:true });
+  // Chart 4: Grounds used vs total GHG avoided
+  addCard(grid, 'col4', 'Coffee Grounds Used vs Total GHG Avoided', 'var(--gold)', () => {
+    const totalGHG = GHG_METRICS.reduce((s,m) => s + (parseFloat(row[m.key])||0), 0);
+    mkChart('col4', 'bar',
+      ['Grounds Used (g)', 'GHG Avoided (g)'],
+      [{ label:'Grams',
+         data: [grams, totalGHG],
+         backgroundColor: ['#c8863c99','#7ec88a99'],
+         borderColor:     ['#c8863c',  '#7ec88a'],
+         borderWidth: 1 }], {});
   });
 }
 
-// ── Emissions charts ───────────────────────────────────────────
+// renderEmissions is now merged into renderCollection above.
+// This stub keeps render() working without changes.
 function renderEmissions() {
-  const grid = document.getElementById('emissions-grid');
-  grid.innerHTML = '';
-  const sources = uniq(allRows, COL_SOURCING);
-  const types   = uniq(allRows, COL_TYPE);
-
-  // GHG side — 3 gases
-  GHG_METRICS.forEach((m, i) => {
-    addCard(grid, 'ghg'+i, m.full + ' Reduced', m.color, () => {
-      const data = types.map(t => sum(allRows.filter(r=>r[COL_TYPE]===t), m.key));
-      mkChart('ghg'+i, 'bar', types,
-        [{ label: m.label+' (g)', data, backgroundColor: m.color+'88', borderColor:m.color, borderWidth:1 }], {});
-    });
-  });
-
-  // AQ side — 4 pollutants
-  AQ_METRICS.forEach((m, i) => {
-    addCard(grid, 'aq'+i, m.full + ' Reduced', m.color, () => {
-      const data = types.map(t => sum(allRows.filter(r=>r[COL_TYPE]===t), m.key));
-      mkChart('aq'+i, 'bar', types,
-        [{ label: m.label+' (g)', data, backgroundColor: m.color+'88', borderColor:m.color, borderWidth:1 }], {});
-    });
-  });
+  document.getElementById('emissions-grid').innerHTML = '';
 }
 
 // ── Card builder ───────────────────────────────────────────────
