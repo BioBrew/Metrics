@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Grounds to Good — Impact Dashboard</title>
+<title>BioBrew — Environmental Impact Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
@@ -13,15 +13,15 @@
    ═══════════════════════════════════════════════ */
 :root {
   /* Colors */
-  --bg:         #0f0a06;       /* page background */
-  --surf:       #1a1108;       /* card background */
-  --surf2:      #231a0e;       /* slightly lighter card */
-  --border:     #2e2010;       /* divider lines */
-  --accent:     #c8863c;       /* main orange-brown accent */
-  --accent-glow:#c8863c44;
-  --gold:       #e8c97a;       /* warm gold highlights */
-  --cream:      #f0e6cc;       /* light text */
-  --muted:      #7a6040;       /* secondary text */
+  --bg:         #fefbeb;       /* page background */
+  --surf:       #fdf3c8;       /* card background */
+  --surf2:      #f5e99a;       /* slightly lighter card */
+  --border:     #e8d87a;       /* divider lines */
+  --accent:     #8B4513;       /* main orange-brown accent */
+  --accent-glow:#8B451333;
+  --lbrown:       #97785c;       /* light brown highlights */
+  --dbrown:      #4c3929;       /* dark text */
+  --dgreen:      #506d48;       /* secondary text */
   --green:      #7ec88a;       /* greenhouse gas color */
   --blue:       #7eb4c8;       /* air pollutant color */
   --danger:     #c87a7a;
@@ -37,7 +37,7 @@
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{
-  background:var(--bg); color:var(--cream);
+  background:var(--bg); color:var(--dbrown);
   font-family:var(--font-body); font-size:14px; line-height:1.5;
   min-height:100vh;
   background-image:
@@ -69,25 +69,25 @@ header::before {
 h1 {
   font-family: var(--font-display);
   font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 900; color: var(--cream); line-height: 1.05;
+  font-weight: 900; color: var(--dbrown); line-height: 1.05;
 }
 h1 em { color: var(--accent); font-style: italic; }
 /* ── EDIT SITE SUBTITLE HERE ── */
 .tagline {
-  color: var(--muted); font-size: 14px; margin-top: 0.5rem;
+  color: var(--dgreen); font-size: 14px; margin-top: 0.5rem;
   max-width: 440px; font-weight: 300;
 }
 .header-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
 #status {
   font-size: 11px; letter-spacing: 0.12em; padding: 0.35rem 1rem;
   border: 1px solid var(--border); background: var(--surf);
-  color: var(--muted); font-family: var(--font-body);
+  color: var(--dgreen); font-family: var(--font-body);
 }
 #status.live  { border-color: var(--accent); color: var(--accent); }
 #status.error { border-color: var(--danger); color: var(--danger); }
-#updated { color: var(--muted); font-size: 11px; }
+#updated { color: var(--dgreen); font-size: 11px; }
 .refresh-btn {
-  background: transparent; border: 1px solid var(--border); color: var(--muted);
+  background: transparent; border: 1px solid var(--border); color: var(--dgreen);
   font-family: var(--font-body); font-size: 11px; padding: 0.35rem 0.9rem;
   cursor: pointer; letter-spacing: 0.1em; transition: all 0.2s;
 }
@@ -114,13 +114,13 @@ h1 em { color: var(--accent); font-style: italic; }
 }
 .hero-kpi.in::after { transform: scaleX(1); }
 .kpi-icon { font-size: 1.4rem; margin-bottom: 0.6rem; line-height: 1; }
-.kpi-label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; font-weight: 500; }
+.kpi-label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--dgreen); margin-bottom: 0.4rem; font-weight: 500; }
 .kpi-value {
   font-family: var(--font-display);
   font-size: clamp(2rem, 3.5vw, 2.8rem);
   font-weight: 900; color: var(--c, var(--accent)); line-height: 1;
 }
-.kpi-unit { font-size: 12px; color: var(--muted); margin-top: 0.3rem; }
+.kpi-unit { font-size: 12px; color: var(--dgreen); margin-top: 0.3rem; }
 
 /* ── SECTION LABELS ── */
 .section-header {
@@ -129,10 +129,10 @@ h1 em { color: var(--accent); font-style: italic; }
 }
 .section-label {
   font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--muted); font-weight: 500;
+  color: var(--dgreen); font-weight: 500;
 }
 .section-rule { flex: 1; height: 1px; background: var(--border); }
-.section-sublabel { font-size: 11px; color: var(--muted); opacity: 0.6; }
+.section-sublabel { font-size: 11px; color: var(--dgreen); opacity: 0.6; }
 
 /* ── CARD GRID ── */
 .card-grid {
@@ -148,7 +148,7 @@ h1 em { color: var(--accent); font-style: italic; }
 .card:nth-child(even) { border-right: none; }
 .card-title {
   font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
-  color: var(--muted); margin-bottom: 1.25rem;
+  color: var(--dgreen); margin-bottom: 1.25rem;
   display: flex; align-items: center; gap: 0.6rem;
 }
 .card-dot {
@@ -190,23 +190,23 @@ h1 em { color: var(--accent); font-style: italic; }
   padding: 1rem 3rem;
   border-bottom: 1px solid var(--border);
   background: var(--surf);
-  font-size: 12px; color: var(--muted);
+  font-size: 12px; color: var(--dgreen);
   display: flex; flex-wrap: wrap; gap: 2rem;
 }
-.insight-item strong { color: var(--gold); }
+.insight-item strong { color: var(--lbrown); }
 
 /* ── TABLE ── */
 .table-section { padding: 1.75rem 2.5rem; border-bottom: 1px solid var(--border); }
 .table-scroll  { overflow-x: auto; margin-top: 1rem; }
 table { width: 100%; border-collapse: collapse; font-size: 12px; }
 thead tr { border-bottom: 1px solid var(--border); }
-th { padding: 0.5rem 1rem; text-align: left; color: var(--muted); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 400; white-space: nowrap; }
+th { padding: 0.5rem 1rem; text-align: left; color: var(--dgreen); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 400; white-space: nowrap; }
 td { padding: 0.5rem 1rem; border-bottom: 1px solid rgba(200,134,60,.06); white-space: nowrap; }
 tr:hover td { background: rgba(200,134,60,.04); }
 td.hi   { color: var(--accent); font-weight: 500; text-align: right; }
-td.src  { color: var(--gold); }
+td.src  { color: var(--lbrown); }
 td.typ  { color: var(--blue); }
-td.gram { color: var(--cream); font-weight: 500; text-align: right; }
+td.gram { color: var(--dbrown); font-weight: 500; text-align: right; }
 
 /* ── SPINNER ── */
 .spinner { display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite; }
@@ -216,7 +216,7 @@ td.gram { color: var(--cream); font-weight: 500; text-align: right; }
 footer {
   padding: 1.25rem 3rem;
   display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;
-  color: var(--muted); font-size: 11px;
+  color: var(--dgreen); font-size: 11px;
 }
 
 @media(max-width:700px){
@@ -394,7 +394,7 @@ function renderHero() {
   const kpis = [
     { icon:'☕', label:'Coffee Grounds Diverted', value: fmt(totalGrams), unit:'grams from landfill', color:'var(--accent)' },
     { icon:'🌿', label:'Total GHG Avoided',       value: fmt(totalGHG),   unit:'grams CO₂-equiv.',   color:'var(--green)' },
-    { icon:'🏪', label:'Partner Coffee Shops',    value: sources,         unit:'unique sources',      color:'var(--gold)' },
+    { icon:'🏪', label:'Partner Coffee Shops',    value: sources,         unit:'unique sources',      color:'var(--lbrown)' },
     { icon:'🫘', label:'Roast Types Used',         value: roastTypes,     unit:'different roasts',    color:'var(--blue)' },
   ];
 
@@ -469,7 +469,7 @@ function renderCollection() {
   });
 
   // Chart 4: Grounds used vs total GHG avoided
-  addCard(grid, 'col4', 'Coffee Grounds Used vs Total GHG Avoided', 'var(--gold)', () => {
+  addCard(grid, 'col4', 'Coffee Grounds Used vs Total GHG Avoided', 'var(--lbrown)', () => {
     const totalGHG = GHG_METRICS.reduce((s,m) => s + (parseFloat(row[m.key])||0), 0);
     mkChart('col4', 'bar',
       ['Grounds Used (g)', 'GHG Avoided (g)'],
@@ -513,8 +513,8 @@ function mkChart(id, type, labels, datasets, opts={}) {
           labels: { color:'#7a6040', font:{ family:"'DM Sans',sans-serif", size:11 }, boxWidth:10, padding:14 }
         },
         tooltip: {
-          backgroundColor:'#1a1108', borderColor:'#2e2010', borderWidth:1,
-          titleColor:'#f0e6cc', bodyColor:'#c8863c', padding:12,
+          backgroundColor:'#fdf3c8', borderColor:'#2e2010', borderWidth:1,
+          titleColor:'#2c1a0e', bodyColor:'#c8863c', padding:12,
           titleFont:{ family:"'DM Sans',sans-serif", size:11 },
           bodyFont:{ family:"'DM Sans',sans-serif", size:12, weight:'500' },
           callbacks:{ label: c => '  ' + fmt(c.parsed?.y ?? c.parsed ?? c.raw) + ' g' }
